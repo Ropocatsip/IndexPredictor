@@ -8,7 +8,7 @@ library.add(faFacebook, faLinkedin, faYoutube, faInstagram);
 export default function Footer() 
 {
     return (<>
-        <footer className="text-muted px-5 py-5 position-absolute bottom-0 start-0 w-100">
+        <footer className="footer text-muted px-5 py-5 position-absolute bottom-0 start-0 w-100">
             <hr />
             <p className="mb-4">IndexPredictor</p>
             <p>National Electronics and Computer Technology Center x Chulalongkorn University</p>

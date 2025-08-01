@@ -8,3 +8,25 @@
 .card-title {
     color: #334E6F !important;
 }
+
+.body {
+    background-color: #F9F9F9;
+}
+
+.footer {
+    background-color: white;
+}
+
+.sub-header {
+    background-color: white;
+    color: #888DA0;
+}
+
+.nav-item {
+    border-right: 1px solid #ccc;
+}
+
+.nav-item-first {
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
