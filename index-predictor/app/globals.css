@@ -34,3 +34,13 @@
 .card-index-detail {
     background-color: #F5F5F5 !important;
 }
+
+.card-color {
+    display: flex;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+hr.line { 
+    margin: 0;
+} 
