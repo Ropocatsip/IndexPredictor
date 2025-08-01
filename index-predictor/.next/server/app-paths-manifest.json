@@ -1,5 +1,4 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/predictor-detail/ndvi/page": "app/predictor-detail/ndvi/page.js",
-  "/predictor-detail/ndmi/page": "app/predictor-detail/ndmi/page.js"
+  "/page": "app/page.js",
+  "/predictor-detail/ndvi/page": "app/predictor-detail/ndvi/page.js"
 }
