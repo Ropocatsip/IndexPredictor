@@ -1,3 +1,7 @@
-export default function Page() {
-  return <p>Landing Page</p>;
+export default function LandingPage() {
+  return (
+    <div className="px-5">
+      Landing page
+    </div>
+  );
 }
