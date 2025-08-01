@@ -3,14 +3,9 @@ import styles from "./page.module.css";
 
 export default function Home() {
   return (
-    <div>
+    <div className="px-5">
       
-      <footer>
-        IndexPredictor
-        <div>
-          National Electronics and Computer Technology Center x Chulalongkorn University
-        </div>
-      </footer>
+      Body
     </div>
   );
 }

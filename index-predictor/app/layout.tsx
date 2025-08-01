@@ -4,6 +4,9 @@ import "./globals.css";
 import Header from "./components/header";
 import Footer from "./components/footer";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-svg-core/styles.css';
+import { config } from '@fortawesome/fontawesome-svg-core';
+config.autoAddCss = false;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} px-5`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} d-flex flex-column`}>
         <Header/>
         {children}
         <Footer/>

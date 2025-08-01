@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Header() 
 {
     return (<>
-        <header className="py-3 bg-light text-center">
+        <header className="header px-5 py-3 text-left text-bold">
             IndexPredictor
         </header>
     </>);
