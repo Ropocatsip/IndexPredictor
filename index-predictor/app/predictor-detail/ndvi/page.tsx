@@ -82,12 +82,25 @@ export default function NDVI() {
             <p>ข้อมูลดัชนี NDVI ที่พิกัด 207, 270 </p>
           </div>
           <div className='d-flex flex-row'>
-            <div className='flex-grow-1 me-3'>
+            <div className='flex-grow-1 flex-column  me-3'>
               <MyChart />
             </div>
-            <div className='card card-index-detail ms-auto p-3'>
-              <p>ค่า NDVI จากดาวเทียม</p>
-              <p>ค่า NDVI จากการทำนาย</p>
+            <div className="d-flex flex-column legend-card">
+              <div className="legend-item">
+                  <div className="legend-symbol">
+                      <div className="circle blue-color"></div>
+                      <div className="line-icon blue-color"></div>
+                  </div>
+                  <span>ค่า NDVI จากดาวเทียม</span>
+              </div>
+
+              <div className="legend-item">
+                  <div className="legend-symbol">
+                      <div className="circle orange-color"></div>
+                      <div className="line-icon orange-color"></div>
+                  </div>
+                  <span>ค่า NDVI จากการทำนาย</span>
+              </div>
             </div>
           </div>
         </div>

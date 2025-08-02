@@ -40,6 +40,7 @@ const data: ChartData<'line'> = {
   labels: labels,
   datasets: [
     {
+        hidden: false,
         label: 'NDVI',
         data: [0.63, 0.35, 0.42, 0.58, 0.65, 0.72, 0.78, 0.85, 0.71],
         backgroundColor: '#60a5fa',
