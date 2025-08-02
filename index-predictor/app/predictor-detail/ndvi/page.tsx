@@ -1,7 +1,8 @@
-import Image from 'next/image';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImages, faFileCsv, faMapLocation, faLocationDot, faSquare } from '@fortawesome/free-solid-svg-icons';
+import MyChart from '../components/my-chart';
+
 
 library.add(faImages, faFileCsv, faMapLocation, faLocationDot, faSquare);
 
@@ -41,19 +42,21 @@ export default function NDVI() {
             <p>วันที่ดูข้อมูล : 04/07/2025 (สัปดาห์ที่ 27)</p>
           </div>
           <div className='d-flex flex-row py-3'>
-            <div className='d-flex justify-content-start flex-column card-color ms-auto '>
-              {colors.map((color) => (
-                <div key={color.id}>
-                  <div className='d-flex flex-row'>
-                    <FontAwesomeIcon icon="square" size="lg" color={color.color}></FontAwesomeIcon>
-                    {color.title}
-                    <div className='d-flex ms-auto px-2'>
-                      {color.desc}
+            <div className='d-flex ms-auto'>
+              <div className='d-flex justify-content-start flex-column card-color'>
+                {colors.map((color) => (
+                  <div key={color.id}>
+                    <div className='d-flex flex-row'>
+                      <FontAwesomeIcon icon="square" size="lg" color={color.color}></FontAwesomeIcon>
+                      {color.title}
+                      <div className='d-flex ms-auto px-2'>
+                        {color.desc}
+                      </div>
                     </div>
+                    {(color.id == 4 || color.id == 7 || color.id == 10) ? (<hr className='line'></hr>): ""}
                   </div>
-                  {(color.id == 4 || color.id == 7 || color.id == 10) ? (<hr className='line'></hr>): ""}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
           <div className='d-flex justify-content-center gap-3'>
@@ -79,8 +82,8 @@ export default function NDVI() {
             <p>ข้อมูลดัชนี NDVI ที่พิกัด 207, 270 </p>
           </div>
           <div className='d-flex flex-row'>
-            <div>
-              <p>กราฟ</p>
+            <div className='flex-grow-1 me-3'>
+              <MyChart />
             </div>
             <div className='card card-index-detail ms-auto p-3'>
               <p>ค่า NDVI จากดาวเทียม</p>

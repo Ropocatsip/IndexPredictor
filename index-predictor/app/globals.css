@@ -1,8 +1,9 @@
 .header {
     background-color: #2E3B59;
     color: white;
-    font-size: 30px;
+    font-size: 25px;
     font-weight: bold;
+    cursor: pointer;
 }
 
 .card-title {
