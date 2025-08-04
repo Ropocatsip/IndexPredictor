@@ -2,7 +2,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImages, faFileCsv, faMapLocation, faLocationDot, faSquare } from '@fortawesome/free-solid-svg-icons';
 import MyChart from '../components/my-chart';
-
+import { getISOWeek, startOfISOWeek, addWeeks, format } from 'date-fns';
 
 library.add(faImages, faFileCsv, faMapLocation, faLocationDot, faSquare);
 
@@ -32,14 +32,27 @@ export default function NDVI() {
     { id: 21, title: '-1.0', color: '#FF0028' }
   ];
 
+  const now = new Date();
+  const jan4 = new Date(now.getFullYear(), 0, 4); // Jan 4 is always in the first ISO week
+  const firstISOWeekStart = startOfISOWeek(jan4);
+  const weekNumber = getPredictedWeekNumber(); 
+  const startDate = addWeeks(firstISOWeekStart, weekNumber - 1);
+  const predictedDateStart = format(startDate, 'dd/MM/yyyy');
+  const predictedDateEnd = format(addWeeks(startDate, 1), 'dd/MM/yyyy');
+
+  function getPredictedWeekNumber(): number {
+    if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
+    else return 45;
+  }
+
   return (
     <div className="px-5 py-3">
       <h4>ดัชนีความแตกต่างของพืช</h4>
       <div className="card d-flex flex-column mt-3" style={{ width: '100%' }}>
         <div className="card-body d-flex flex-column px-5">
           <div className='d-flex flex-row justify-content-between'>
-            <p>สัปดาห์ที่ทำนาย : week 45, 2025 (07/11/2025 - 13/11/2025)</p>
-            <p>วันที่ดูข้อมูล : 04/07/2025 (สัปดาห์ที่ 27)</p>
+            <p>สัปดาห์ที่ทำนาย : week {weekNumber}, {now.getFullYear()} ({predictedDateStart} - {predictedDateEnd})</p>
+            <p>วันที่ดูข้อมูล : {now.toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' })} (สัปดาห์ที่ {getISOWeek(now)})</p>
           </div>
           <div className='d-flex flex-row py-3'>
             <div className='d-flex ms-auto'>
@@ -59,7 +72,7 @@ export default function NDVI() {
               </div>
             </div>
           </div>
-          <div className='d-flex justify-content-center gap-3'>
+          <div className='d-flex justify-content-center gap-5'>
             <button type="button" className="btn btn-info">
               <FontAwesomeIcon className='pe-2' icon="map-location" size="lg"></FontAwesomeIcon>
               Map view

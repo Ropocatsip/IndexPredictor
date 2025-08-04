@@ -8,7 +8,7 @@ library.add(faLocationDot);
 
 export default function Home() {
   return (
-    <div className="d-flex align-items-center p-5 justify-content-between">
+    <div className="d-flex align-items-center p-5 justify-content-between mb-5">
       <Link href="/predictor-detail/ndvi" className="text-decoration-none text-reset">
         <div className="card d-flex flex-column" style={{ maxWidth: '350px', width: '100%' }}>
           <div style={{ position: 'relative', width: '100%', height: '200px' }}>
