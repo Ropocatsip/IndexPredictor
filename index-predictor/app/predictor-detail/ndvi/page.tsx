@@ -3,6 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImages, faFileCsv, faMapLocation, faLocationDot, faSquare } from '@fortawesome/free-solid-svg-icons';
 import MyChart from '../components/my-chart';
 import { getISOWeek, startOfISOWeek, addWeeks, format } from 'date-fns';
+import { GoogleMapView } from '../components/google-map-view';
+import { MapComponent } from '../components/map';
 
 library.add(faImages, faFileCsv, faMapLocation, faLocationDot, faSquare);
 
@@ -48,13 +50,20 @@ export default function NDVI() {
   return (
     <div className="px-5 py-3">
       <h4>ดัชนีความแตกต่างของพืช</h4>
+      {/* Predicted Index */}
       <div className="card d-flex flex-column mt-3" style={{ width: '100%' }}>
         <div className="card-body d-flex flex-column px-5">
           <div className='d-flex flex-row justify-content-between'>
             <p>สัปดาห์ที่ทำนาย : week {weekNumber}, {now.getFullYear()} ({predictedDateStart} - {predictedDateEnd})</p>
             <p>วันที่ดูข้อมูล : {now.toLocaleDateString('th-TH', { year: 'numeric', month: '2-digit', day: '2-digit' })} (สัปดาห์ที่ {getISOWeek(now)})</p>
           </div>
-          <div className='d-flex flex-row py-3'>
+          {/* picture */}
+          <div className='d-flex flex-row py-3 gap-3'>
+            <div className='flex-grow-1'>
+              <GoogleMapView>
+                <MapComponent />
+              </GoogleMapView>
+            </div>
             <div className='d-flex ms-auto'>
               <div className='d-flex justify-content-start flex-column card-color'>
                 {colors.map((color) => (
@@ -72,6 +81,7 @@ export default function NDVI() {
               </div>
             </div>
           </div>
+          {/* button */}
           <div className='d-flex justify-content-center gap-5'>
             <button type="button" className="btn btn-info">
               <FontAwesomeIcon className='pe-2' icon="map-location" size="lg"></FontAwesomeIcon>
@@ -88,6 +98,7 @@ export default function NDVI() {
           </div>
         </div>
       </div>
+      {/* Chart */}
       <div className="card d-flex flex-column mt-3" style={{ width: '100%' }}>
         <div className="card-body d-flex flex-column px-5">
           <div className='d-flex flex-row'>
