@@ -107,7 +107,7 @@ export default function NDVI() {
           </div>
           <div className='d-flex flex-row'>
             <div className='flex-grow-1 flex-column  me-3'>
-              <MyChart />
+              <MyChart type="NDVI" />
             </div>
             <div className="d-flex flex-column legend-card">
               <div className="legend-item">
