@@ -19,14 +19,26 @@ except Exception as e:
 def getLatestDate():
     latestDate = mycol.find_one(sort=[("_id", -1)])["LatestDate"]
     # latestWeek = latestDate.isocalendar().week
-    print(f"Latest Week : {latestDate}")
+    print(f"Latest Date : {latestDate}")
     return latestDate
+
+def getCurrentDate():
+    currentDate = datetime.now()
+    print(f"Current Date : {currentDate}")
+    return currentDate
 
 def getStartDate() : 
     startDate = datetime.now() - relativedelta(years=5)
     # startWeek = startDate.isocalendar().week
     print(f"Start Date : {startDate}")
     return startDate
+
+def insertLatestDate(currentDate):
+    data = {
+        "LatestDate": currentDate
+    }
+    mycol.insert_one(data)
+    print("Inserted latest date success.")
 
 def deleteOldRawData(startDate):
 
@@ -36,8 +48,7 @@ def deleteOldRawData(startDate):
     for filename in os.listdir(folder_path):
         if filename.endswith(".csv"):
             try:
-                # Extract date part from filename (before "_ndvi.csv")
-                date_str = filename.split("_")[0]  # e.g., "2020-08-01"
+                date_str = filename.split("_")[0]
                 file_date = datetime.strptime(date_str, "%Y-%m-%d")
                 
                 # Compare dates
@@ -47,4 +58,3 @@ def deleteOldRawData(startDate):
                     print(f"Deleted: {filename}")
             except ValueError:
                 print(f"Skipped (invalid date format): {filename}")
-    return True

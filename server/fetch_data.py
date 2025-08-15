@@ -72,54 +72,58 @@ def canopy(studyArea) :
     forest=canopy
     return forest
 
-def saveCanopy(): 
-    forestmask = canopy(studyArea).mask()#.clip(studyArea) 
-        #imageSen1VV = image 
+# def saveCanopy(): 
+#     forestmask = canopy(studyArea).mask()#.clip(studyArea) 
+#         #imageSen1VV = image 
 
-    forestmask = canopy(studyArea).mask()#.clip(studyArea) 
-    forest= canopy(studyArea)
-    forest =forest.And(forestmask)
+#     forestmask = canopy(studyArea).mask()#.clip(studyArea) 
+#     forest= canopy(studyArea)
+#     forest =forest.And(forestmask)
 
-    url = forest.getDownloadUrl({
-            'bands': ['cover_code'],
-            'region': studyAreaRGB,
-            'scale': 1,
-            'format': 'NPY'
-    })
-    response = requests.get(url)
-    data = numpy.load(io.BytesIO(response.content))
-    # print(data)
-    # print(data.dtype)
-    # print(type(data))
-    # print(data.shape)
-    index = ['Row'+str(i) for i in range(1, len(data)+1)]
-    vv=data['cover_code']
+#     url = forest.getDownloadUrl({
+#             'bands': ['cover_code'],
+#             'region': studyAreaRGB,
+#             'scale': 1,
+#             'format': 'NPY'
+#     })
+#     response = requests.get(url)
+#     data = numpy.load(io.BytesIO(response.content))
+#     # print(data)
+#     # print(data.dtype)
+#     # print(type(data))
+#     # print(data.shape)
+#     index = ['Row'+str(i) for i in range(1, len(data)+1)]
+#     vv=data['cover_code']
 
-    vv_norm = (vv-numpy.min(vv))/(numpy.max(vv)-numpy.min(vv))  
-    # print("VV")
-    # print(vv)
-    im = Image.fromarray(numpy.uint8(cm.gist_rainbow(vv_norm)*255))
-    im.save("img/canopy.png")
-    # im.save("/var/www/html/Rayong02/image/canopy.png")
+#     vv_norm = (vv-numpy.min(vv))/(numpy.max(vv)-numpy.min(vv))  
+#     # print("VV")
+#     # print(vv)
+#     im = Image.fromarray(numpy.uint8(cm.gist_rainbow(vv_norm)*255))
+#     im.save("img/canopy.png")
+#     # im.save("/var/www/html/Rayong02/image/canopy.png")
 
-    DF = pd.DataFrame(vv) 
-    # print(DF)
+#     DF = pd.DataFrame(vv) 
+#     # print(DF)
 
-        # save the dataframe as a csv file 
-    DF.to_csv("img/canopy.csv")
+#         # save the dataframe as a csv file 
+#     DF.to_csv("img/canopy.csv")
 
-def fetchAndSaveCsv():
-    today = datetime.datetime.now()
-    five_years_ago = today.replace(year=today.year - 5)
-    startDate = ee.Date.fromYMD(five_years_ago.year, five_years_ago.month, five_years_ago.day)
-    endDate = ee.Date.fromYMD(today.year, today.month, today.day)
+def fetchAndSaveCsv(startDate, endDate):
+
+    startDate = ee.Date.fromYMD(startDate.year, startDate.month, startDate.day)
+    endDate = ee.Date.fromYMD(endDate.year, endDate.month, endDate.day)
     
-    s2 = importFarmManagement(studyArea, startDate,endDate)
+    s2 = importFarmManagement(studyArea, startDate, endDate)
+    try:
+        collectionList = s2.toList(s2.size())
+        collectionSize = collectionList.size().getInfo()
 
-    collectionList = s2.toList(s2.size())
-    collectionSize = collectionList.size().getInfo()
+        print(f"start fetching data from {startDate} to {endDate}")
 
-    print(f"start fetching data from {five_years_ago.date()} to {today.date()}")
+    except Exception as e:
+        print("There are no new data.")
+        print(e)
+        return []
 
     #  get raw data  
     for i in range(collectionSize):
