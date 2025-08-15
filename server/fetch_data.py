@@ -128,7 +128,7 @@ def fetchAndSaveCsv():
         epoch = image.get("system:time_start").getInfo()
         timestamp = datetime.datetime.fromtimestamp(epoch/1e3)
         timestring=timestamp.strftime('%Y-%m-%d')
-        image_name = timestring+'_sen2_'
+        image_name = timestring
 
         imageNDVI = image.select(['NDVI']).clip(studyArea)    
         urlNDVI = imageNDVI.getDownloadUrl({
