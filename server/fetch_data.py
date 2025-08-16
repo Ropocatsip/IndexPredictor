@@ -65,6 +65,7 @@ def importFarmManagement(studyArea,startDate,endDate):
     s2s =s2s.map(scaleBands)
     
     return s2s
+
 def canopy(studyArea) :
     canopy = (ee.ImageCollection("projects/meta-forest-monitoring-okw37/assets/CanopyHeight").mosaic()
               .clip(studyArea))
@@ -164,4 +165,5 @@ def fetchAndSaveCsv(startDate, endDate):
         DFNDMI.to_csv('data/ndmi/rawdata/' + image_name + "_ndmi.csv")
 
         print("ndvi and ndmi saved for " + timestring)
-        return collectionSize
+        
+    return collectionSize

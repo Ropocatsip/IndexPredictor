@@ -1,24 +1,29 @@
 from flask import Flask, jsonify
 from fetch_data import fetchAndSaveCsv
 # from train_model import trainModel
-from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData
+from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteRainyWeek, deleteOldAvgWeekData
 
 app = Flask(__name__)
 
 @app.route('/predict', methods=['POST'])
 def fetch_route():
-    if (not isRainy()):
-        print("not rainy week")
-        currentDate = getCurrentDate()
-        latestDate = getLatestDate()
-        startDate = getStartDate()
-        deleteOldRawData(startDate)
+    currentDate = getCurrentDate()
+    latestDate = getLatestDate()
+    startDate = getStartDate(currentDate)
+
+    if (not isRainy(currentDate)):
+        print("not rainy week, start operating ....")
+        deleteOldRawData(startDate, "ndvi")
+        deleteOldRawData(startDate, "ndmi")
         numOfNewFile = fetchAndSaveCsv(latestDate, currentDate)  # Call your function
         avgRawData("ndvi")
-        avgRawData("ndmi")
+        # deleteOldAvgWeekData(startDate,"ndvi")
+        # deleteOldAvgWeekData("ndmi")
+        # fillMissingWeek("ndvi")
+        # deleteRainyWeek()
         # message = trainModel('NDMI')
     else : 
-        print("rainy week")
+        print("rainy week, skip operation.")
 
     # insertLatestDate(currentDate)
     return jsonify({'status': 'success'})

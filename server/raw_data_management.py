@@ -4,6 +4,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import os
 import pandas as pd
+import re
 
 uri = "mongodb+srv://6672030421:1234@production.rzzjqkc.mongodb.net/?retryWrites=true&w=majority&appName=Production"
 # Create a new client and connect to the server
@@ -16,10 +17,9 @@ try:
 except Exception as e:
     print(e)
 
-def isRainy():
-    # current_week = datetime.now().isocalendar().week
-    current_week = 45
-    if (current_week > 20 and current_week < 45) : return True
+def isRainy(currentDate):
+    currentWeek = currentDate.isocalendar().week
+    if (currentWeek > 20 and currentWeek < 45) : return True
     else: return False
 
 def getLatestDate():
@@ -29,12 +29,13 @@ def getLatestDate():
     return latestDate
 
 def getCurrentDate():
-    currentDate = datetime.now()
+    # currentDate = datetime.now()
+    currentDate = datetime(2025, 5, 18)
     print(f"Current Date : {currentDate}")
     return currentDate
 
-def getStartDate() : 
-    startDate = datetime.now() - relativedelta(years=5)
+def getStartDate(currentDate) : 
+    startDate = currentDate - relativedelta(years=5)
     # startWeek = startDate.isocalendar().week
     print(f"Start Date : {startDate}")
     return startDate
@@ -46,10 +47,10 @@ def insertLatestDate(currentDate):
     mycol.insert_one(data)
     print("Inserted latest date success.")
 
-def deleteOldRawData(startDate):
+def deleteOldRawData(startDate, indexType):
 
     # storage or raw data location file
-    folder_path = "data/ndvi/rawdata"
+    folder_path = f"data/{indexType}/rawdata"
 
     for filename in os.listdir(folder_path):
         if filename.endswith(".csv"):
@@ -64,6 +65,26 @@ def deleteOldRawData(startDate):
                     print(f"Deleted: {filename}")
             except ValueError:
                 print(f"Skipped (invalid date format): {filename}")
+
+def deleteOldAvgWeekData(startDate, indexType):
+
+    # storage or raw data location file
+    folder_path = f"data/{indexType}/weekdata"
+
+    def week_to_date(year, week):
+        return datetime.strptime(f"{year}-W{week}-1", "%Y-W%W-%w")
+    
+    pattern = re.compile(r"(\d{4})-week(\d{1,2})\.csv$")
+    for filename in os.listdir(folder_path):
+        match = pattern.match(filename)
+        if match:
+            year = int(match.group(1))
+            week = int(match.group(2))
+            file_date = week_to_date(year, week)
+            if file_date < startDate:
+                file_path = os.path.join(folder_path, filename)
+                os.remove(file_path)
+                print(f"Deleted: {filename}")
 
 def avgRawData(indexType):
     # Folder containing CSV files
@@ -84,8 +105,14 @@ def avgRawData(indexType):
     for file in os.listdir(input_folder):
         if file.endswith(".csv"):
             year, week = get_week_info(file)
+            output_file = os.path.join(output_folder, f"{year}-week{week:02}.csv")
+
+            # skip if already have data
+            if os.path.exists(output_file):
+                # print(f"Skipped (already exists): {output_file}")
+                continue
+
             filepath = os.path.join(input_folder, file)
-            
             df = pd.read_csv(filepath, index_col=0)  # Skip first column as index
             if (year, week) not in week_groups:
                 week_groups[(year, week)] = []
@@ -93,9 +120,14 @@ def avgRawData(indexType):
 
     # Compute weekly average and save to CSV
     for (year, week), dfs in week_groups.items():
+        output_file = os.path.join(output_folder, f"{year}-week{week:02}.csv")
+
+        if os.path.exists(output_file):
+            continue
+
         avg_df = sum(dfs) / len(dfs)  # Compute mean across all files in the same week
-        output_file = os.path.join(output_folder, f"{year}-week{week}.csv")
         avg_df.to_csv(output_file, index=True)
+        print(f"Saved: {output_file}")
 
     print("Weekly average CSV files saved in:", output_folder)
 
@@ -131,8 +163,8 @@ def linear_interpolation(existing_data, existing_weeks, year, target_week, data_
     
     return interpolated_data
 
-def fillMissingWeek():
-    folder = f"data/ndvi/weekdata/"
+def fillMissingWeek(indexType):
+    folder = f"data/{indexType}/weekdata/"
     files = [f for f in os.listdir(folder) if f.endswith('.csv')]
     
     # Read existing files into a dictionary
@@ -159,6 +191,23 @@ def fillMissingWeek():
         for week in missing_weeks:
             interpolated_values = linear_interpolation(data_dict, existing_weeks[year], year, week, data_dict)
             interpolated_df = pd.DataFrame(interpolated_values, columns=df.columns, index=df.index)
-            output_file = os.path.join(folder, f'{year}-week{week}.csv')
+            output_file = os.path.join(folder, f'{year}-week{week:02}.csv')
             interpolated_df.to_csv(output_file)
             print(f'Generated {output_file}')
+
+def deleteRainyWeek():
+    # Folder containing your CSV files
+    folder_path = f"data/ndvi/weekdata/"
+
+    # Regex pattern to match week number
+    pattern = re.compile(r"week(\d{2})\.csv$")
+
+    for filename in os.listdir(folder_path):
+        match = pattern.search(filename)
+        if match:
+            week_num = int(match.group(1))
+            # Delete if week is between 21 and 44
+            if 21 <= week_num <= 44:
+                file_path = os.path.join(folder_path, filename)
+                os.remove(file_path)
+                print(f"Deleted: {filename}")
