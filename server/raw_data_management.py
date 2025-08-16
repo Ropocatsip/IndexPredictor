@@ -163,7 +163,7 @@ def linear_interpolation(existing_data, existing_weeks, year, target_week, data_
     
     return interpolated_data
 
-def fillMissingWeek(indexType):
+def fillMissingWeek(indexType, startDate, currentDate):
     folder = f"data/{indexType}/weekdata/"
     files = [f for f in os.listdir(folder) if f.endswith('.csv')]
     
@@ -189,11 +189,15 @@ def fillMissingWeek(indexType):
         missing_weeks = sorted(all_weeks - set(existing_weeks[year]))
         
         for week in missing_weeks:
-            interpolated_values = linear_interpolation(data_dict, existing_weeks[year], year, week, data_dict)
-            interpolated_df = pd.DataFrame(interpolated_values, columns=df.columns, index=df.index)
-            output_file = os.path.join(folder, f'{year}-week{week:02}.csv')
-            interpolated_df.to_csv(output_file)
-            print(f'Generated {output_file}')
+            # Get the Monday of the given ISO week
+            week_start_date = datetime.strptime(f'{year}-W{week-1}-1', "%Y-W%W-%w").date()
+            # Only generate if within startDate and currentDate
+            if startDate.date() <= week_start_date <= currentDate.date():
+                interpolated_values = linear_interpolation(data_dict, existing_weeks[year], year, week, data_dict)
+                interpolated_df = pd.DataFrame(interpolated_values, columns=df.columns, index=df.index)
+                output_file = os.path.join(folder, f'{year}-week{week:02}.csv')
+                interpolated_df.to_csv(output_file)
+                print(f'Generated {output_file}')
 
 def deleteRainyWeek():
     # Folder containing your CSV files

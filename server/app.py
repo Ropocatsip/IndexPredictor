@@ -15,11 +15,18 @@ def fetch_route():
         print("not rainy week, start operating ....")
         deleteOldRawData(startDate, "ndvi")
         deleteOldRawData(startDate, "ndmi")
+        
         numOfNewFile = fetchAndSaveCsv(latestDate, currentDate)  # Call your function
+
         avgRawData("ndvi")
-        # deleteOldAvgWeekData(startDate,"ndvi")
-        # deleteOldAvgWeekData("ndmi")
-        # fillMissingWeek("ndvi")
+        avgRawData("ndmi")
+
+        fillMissingWeek("ndvi", startDate, currentDate)
+        fillMissingWeek("ndmi", startDate, currentDate)
+
+        deleteOldAvgWeekData(startDate,"ndvi")
+        deleteOldAvgWeekData(startDate,"ndmi")
+
         # deleteRainyWeek()
         # message = trainModel('NDMI')
     else : 
