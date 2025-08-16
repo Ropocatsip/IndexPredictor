@@ -117,13 +117,12 @@ def fetchAndSaveCsv(startDate, endDate):
     try:
         collectionList = s2.toList(s2.size())
         collectionSize = collectionList.size().getInfo()
-
-        print(f"start fetching data from {startDate} to {endDate}")
+        print(f"There are {collectionSize} files.")
 
     except Exception as e:
         print("There are no new data.")
         print(e)
-        return []
+        return 0
 
     #  get raw data  
     for i in range(collectionSize):
@@ -165,3 +164,4 @@ def fetchAndSaveCsv(startDate, endDate):
         DFNDMI.to_csv('data/ndmi/rawdata/' + image_name + "_ndmi.csv")
 
         print("ndvi and ndmi saved for " + timestring)
+        return collectionSize

@@ -1,8 +1,7 @@
 from flask import Flask, jsonify
 from fetch_data import fetchAndSaveCsv
 # from train_model import trainModel
-from date_management import isRainy
-from raw_data_management import getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate
+from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData
 
 app = Flask(__name__)
 
@@ -14,14 +13,15 @@ def fetch_route():
         latestDate = getLatestDate()
         startDate = getStartDate()
         deleteOldRawData(startDate)
-
-        message = fetchAndSaveCsv(latestDate, currentDate)  # Call your function
+        numOfNewFile = fetchAndSaveCsv(latestDate, currentDate)  # Call your function
+        avgRawData("ndvi")
+        avgRawData("ndmi")
         # message = trainModel('NDMI')
     else : 
         print("rainy week")
 
     # insertLatestDate(currentDate)
-    return jsonify({'status': 'success', 'message': message})
+    return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
     app.run(debug=True)
