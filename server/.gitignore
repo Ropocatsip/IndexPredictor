@@ -3,6 +3,6 @@ __pycache__/
 *.h5
 *.csv
 .DS_Store
-server/master-project-nudthaya-b00cfbf908da.json
+master-project-nudthaya-b00cfbf908da.json
 data/
 models/
