@@ -165,5 +165,3 @@ def fetchAndSaveCsv(startDate, endDate):
         DFNDMI.to_csv('data/ndmi/rawdata/' + image_name + "_ndmi.csv")
 
         print("ndvi and ndmi saved for " + timestring)
-        
-    return collectionSize
