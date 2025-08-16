@@ -120,6 +120,8 @@ def avgRawData(indexType):
 
     # Compute weekly average and save to CSV
     for (year, week), dfs in week_groups.items():
+        if 21 <= week <= 44:
+            continue
         output_file = os.path.join(output_folder, f"{year}-week{week:02}.csv")
 
         if os.path.exists(output_file):
@@ -189,6 +191,8 @@ def fillMissingWeek(indexType, startDate, currentDate):
         missing_weeks = sorted(all_weeks - set(existing_weeks[year]))
         
         for week in missing_weeks:
+            if 21 <= week <= 44:
+                continue
             # Get the Monday of the given ISO week
             week_start_date = datetime.strptime(f'{year}-W{week-1}-1', "%Y-W%W-%w").date()
             # Only generate if within startDate and currentDate
@@ -198,20 +202,3 @@ def fillMissingWeek(indexType, startDate, currentDate):
                 output_file = os.path.join(folder, f'{year}-week{week:02}.csv')
                 interpolated_df.to_csv(output_file)
                 print(f'Generated {output_file}')
-
-def deleteRainyWeek():
-    # Folder containing your CSV files
-    folder_path = f"data/ndvi/weekdata/"
-
-    # Regex pattern to match week number
-    pattern = re.compile(r"week(\d{2})\.csv$")
-
-    for filename in os.listdir(folder_path):
-        match = pattern.search(filename)
-        if match:
-            week_num = int(match.group(1))
-            # Delete if week is between 21 and 44
-            if 21 <= week_num <= 44:
-                file_path = os.path.join(folder_path, filename)
-                os.remove(file_path)
-                print(f"Deleted: {filename}")
