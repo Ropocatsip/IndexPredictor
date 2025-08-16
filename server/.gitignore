@@ -4,3 +4,5 @@ __pycache__/
 *.csv
 .DS_Store
 server/master-project-nudthaya-b00cfbf908da.json
+data/
+models/
