@@ -5,11 +5,12 @@ from dateutil.relativedelta import relativedelta
 import os
 import pandas as pd
 import re
+from dotenv import load_dotenv
 
-uri = "mongodb+srv://6672030421:1234@production.rzzjqkc.mongodb.net/?retryWrites=true&w=majority&appName=Production"
 # Create a new client and connect to the server
 try:
-    client = MongoClient(uri, server_api=ServerApi('1'))
+    load_dotenv()
+    client = MongoClient(os.getenv("uri"), server_api=ServerApi('1'))
     client.admin.command('ping')
     print("Pinged your deployment. You successfully connected to MongoDB!")
     mydb = client["IndexPredictor"]

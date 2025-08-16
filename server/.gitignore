@@ -6,3 +6,4 @@ __pycache__/
 master-project-nudthaya-b00cfbf908da.json
 data/
 models/
+.env
