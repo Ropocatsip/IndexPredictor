@@ -1,6 +1,6 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import os
 import pandas as pd
@@ -99,7 +99,8 @@ def avgRawData(indexType):
     def get_week_info(filename):
         date_str = filename.split("_")[0]  # Extract date part
         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-        return date_obj.year, date_obj.isocalendar()[1]  # (year, week_number)
+        iso_year, week_number, _ = date_obj.isocalendar()  # ISO year, ISO week, weekday
+        return iso_year, week_number
 
     # Read and group CSV files by (year, week)
     week_groups = {}
@@ -173,6 +174,10 @@ def fillMissingWeek(indexType, startDate, currentDate):
     # Read existing files into a dictionary
     data_dict = {}
     existing_weeks = {}
+
+    def weeks_in_year(year: int) -> int:
+        # ISO calendar: the last Thursday of the year decides the week count
+        return date(year, 12, 28).isocalendar()[1]
     
     for file in files:
         year, week_number = get_year_week(file)
@@ -188,7 +193,8 @@ def fillMissingWeek(indexType, startDate, currentDate):
     # Process each year separately
     for year in sorted(data_dict.keys()):
         existing_weeks[year].sort()
-        all_weeks = set(range(1, 53))  # Ensure full year coverage
+        num_weeks = weeks_in_year(year)
+        all_weeks = set(range(1, num_weeks + 1))  # Ensure full year coverage
         missing_weeks = sorted(all_weeks - set(existing_weeks[year]))
         
         for week in missing_weeks:
