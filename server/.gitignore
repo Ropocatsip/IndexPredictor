@@ -5,5 +5,5 @@ __pycache__/
 .DS_Store
 master-project-nudthaya-b00cfbf908da.json
 data/
-models/
+model/
 .env

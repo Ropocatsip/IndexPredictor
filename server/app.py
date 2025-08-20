@@ -1,8 +1,8 @@
 from flask import Flask, jsonify
 from fetch_data import fetchAndSaveCsv
-# from train_model import trainModel
 from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteOldAvgWeekData
-from model_management import deleteOldModel, splitTrainAndValidateData
+from model_management import deleteOldModel, trainModel
+from predict_management import predictModel
 
 app = Flask(__name__)
 
@@ -30,8 +30,10 @@ def fetch_route():
         deleteOldAvgWeekData(startDate,"ndmi")
 
         # train model
-        deleteOldModel()
-        splitTrainAndValidateData()
+        # deleteOldModel()
+        # trainModel()
+        predictModel()
+
         # message = trainModel('NDMI')
     else : 
         print("rainy week, skip operation.")

@@ -15,7 +15,7 @@ def deleteOldModel():
         folder_path = f"models/{indexType}"
 
         # File to delete
-        file_name = "my_model.h5"
+        file_name = "cnn_lstm_n6.h5"
 
         # Full path
         file_path = os.path.join(folder_path, file_name)
@@ -27,8 +27,7 @@ def deleteOldModel():
         else:
             print(f"{file_name} does not exist in {folder_path}.")
 
-def splitTrainAndValidateData():
-    folder = "data/ndvi/weekdata"
+def splitTrainAndValidateData(folder):
     # Regex to extract year and week from filenames
     pattern = re.compile(r"(\d{4})-week(\d{2})\.csv")
 
@@ -71,11 +70,11 @@ def trainModel():
                     df = df.iloc[:, 1:]  # Remove first column 
                     df = df.astype(float)  # Ensure numerical format
                     data_frames.append(df.values)
-                    week_info.append((year, week))
+                    week_info.append((year, week, file))  # keep filename too
         
-        data_frames = np.array(data_frames)  # Convert list to numpy array
+        data_frames = np.array(data_frames)
         
-        # Normalize data
+        # Normalize each frame
         scaler = MinMaxScaler()
         data_frames = np.array([scaler.fit_transform(frame) for frame in data_frames])
         
@@ -86,7 +85,7 @@ def trainModel():
         for i in range(len(data) - time_steps):
             X.append(data[i:i + time_steps])
             y.append(data[i + time_steps])
-            week_labels.append(weeks[i + time_steps])
+            week_labels.append(weeks[i + time_steps][2])
         return np.array(X), np.array(y), week_labels
 
     def build_cnn_lstm_model(input_shape, output_size):
@@ -102,17 +101,18 @@ def trainModel():
         return model
     
     # Load and preprocess data
-    folder_path = f"data/ndvi/train"
+    folder_path = f"data/ndvi/weekdata"
     data, weeks, scaler = load_and_preprocess_data(folder_path)
     X, y, week_labels = prepare_sequences(data, weeks)
 
+    train_files, val_files = splitTrainAndValidateData(folder_path)
     # Split data: Train (2019-week42 to 2022-week20), Validate (2022-week42 to 2023-week20)
     X_train, y_train, X_val, y_val = [], [], [], []
-    for i, (year, week) in enumerate(week_labels):
-        if (2019 <= year <= 2021) or (year == 2022 and week <= 20):
+    for i, file in enumerate(week_labels):
+        if file in train_files:
             X_train.append(X[i])
             y_train.append(y[i])
-        elif (year == 2022 and week >= 42) or (year == 2023 and week <= 20):
+        elif file in val_files:
             X_val.append(X[i])
             y_val.append(y[i])
 
@@ -127,11 +127,7 @@ def trainModel():
     callbacks = [EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)]
     history = model.fit(X_train, y_train.reshape(y_train.shape[0], -1), epochs=10, batch_size=16, validation_data=(X_val, y_val.reshape(y_val.shape[0], -1)), callbacks=callbacks)
 
-    # Save the model for transfer learning
-    # model.save("cnn_lstm_model-1.h5")
-
     print(f"Processed data shape: {data.shape}")  # (num_weeks, height, width)
     print(f"Train shape: {X_train.shape}, Validation shape: {X_val.shape}")  # Explicit split based on week numbers
-    model.save("cnn_lstm_model-n6.h5")
+    model.save("model/ndvi/cnn_lstm_n6.h5")
     print(f"Model saved successful.")
-    
