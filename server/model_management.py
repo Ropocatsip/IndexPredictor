@@ -52,7 +52,7 @@ def splitTrainAndValidateData(folder):
     # print("Train files:", train)
     # print("Validate files:", validate)
 
-def trainModel():
+def trainModel(indexType):
 
     def extract_year_week(filename):
         match = re.search(r'(\d{4})-week(\d+)', filename)
@@ -101,7 +101,7 @@ def trainModel():
         return model
     
     # Load and preprocess data
-    folder_path = f"data/ndvi/weekdata"
+    folder_path = f"data/{indexType}/weekdata"
     data, weeks, scaler = load_and_preprocess_data(folder_path)
     X, y, week_labels = prepare_sequences(data, weeks)
 
@@ -129,5 +129,5 @@ def trainModel():
 
     print(f"Processed data shape: {data.shape}")  # (num_weeks, height, width)
     print(f"Train shape: {X_train.shape}, Validation shape: {X_val.shape}")  # Explicit split based on week numbers
-    model.save("model/ndvi/cnn_lstm_n6.h5")
+    model.save(f"model/{indexType}/cnn_lstm_n6.h5")
     print(f"Model saved successful.")

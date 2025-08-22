@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from fetch_data import fetchAndSaveCsv
 from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteOldAvgWeekData
 from model_management import deleteOldModel, trainModel
-from predict_management import predictModel
+from predict_management import predictModel, convertToPng
 
 app = Flask(__name__)
 
@@ -31,9 +31,12 @@ def fetch_route():
 
         # train model
         # deleteOldModel()
-        # trainModel()
-        predictModel()
-
+        # trainModel("ndvi")
+        # trainModel("ndmi")
+        predictModel("ndvi")
+        predictModel("ndmi")
+        convertToPng("ndvi")
+        convertToPng("ndmi")
         # message = trainModel('NDMI')
     else : 
         print("rainy week, skip operation.")
