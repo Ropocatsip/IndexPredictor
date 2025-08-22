@@ -1,3 +1,5 @@
+"use client";
+import { useEffect, useState } from "react";
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImages, faFileCsv, faMapLocation, faLocationDot, faSquare } from '@fortawesome/free-solid-svg-icons';
@@ -5,6 +7,7 @@ import MyChart from '../components/my-chart';
 import { getISOWeek, startOfISOWeek, addWeeks, format } from 'date-fns';
 import { GoogleMapView } from '../components/google-map-view';
 import { MapComponent } from '../components/map';
+import Image from "next/image";
 
 library.add(faImages, faFileCsv, faMapLocation, faLocationDot, faSquare);
 
@@ -34,6 +37,7 @@ export default function NDVI() {
     { id: 21, title: '-1.0', color: '#FF0028' }
   ];
 
+  
   const now = new Date();
   const jan4 = new Date(now.getFullYear(), 0, 4); // Jan 4 is always in the first ISO week
   const firstISOWeekStart = startOfISOWeek(jan4);
@@ -41,6 +45,38 @@ export default function NDVI() {
   const startDate = addWeeks(firstISOWeekStart, weekNumber - 1);
   const predictedDateStart = format(startDate, 'dd/MM/yyyy');
   const predictedDateEnd = format(addWeeks(startDate, 1), 'dd/MM/yyyy');
+  const [isMapView, setIsMapView] = useState(false);
+
+  const toggleView = () => {
+    setIsMapView((prev) => !prev); // toggle true/false
+  };
+
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchImage = async () => {
+      const now = new Date();
+      const weekNumber = 45; // replace with your calculation
+      
+      const res = await fetch(
+        `http://127.0.0.1:5000/predict/ndvi/${now.getFullYear()}-week${weekNumber}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to fetch image");
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setImageUrl(url);
+    };
+
+    fetchImage();
+  }, []);
 
   function getPredictedWeekNumber(): number {
     if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
@@ -60,9 +96,23 @@ export default function NDVI() {
           {/* picture */}
           <div className='d-flex flex-row py-3 gap-3'>
             <div className='flex-grow-1'>
-              <GoogleMapView>
-                <MapComponent />
-              </GoogleMapView>
+              {isMapView ? (
+                <GoogleMapView>
+                  <MapComponent />
+                </GoogleMapView>
+              ) : imageUrl ? (
+                <div className="d-flex justify-content-center">
+                  <Image
+                    src={imageUrl}
+                    alt="NDVI Prediction"
+                    width={600}
+                    height={500}     
+                    className="border rounded"
+                  />
+                </div>
+              ) : (
+                <p>Loading image...</p>
+              )}
             </div>
             <div className='d-flex ms-auto'>
               <div className='d-flex justify-content-start flex-column card-color'>
@@ -83,9 +133,9 @@ export default function NDVI() {
           </div>
           {/* button */}
           <div className='d-flex justify-content-center gap-5'>
-            <button type="button" className="btn btn-info">
-              <FontAwesomeIcon className='pe-2' icon="map-location" size="lg"></FontAwesomeIcon>
-              Map view
+            <button type="button" className="btn btn-info" onClick={toggleView}>
+              <FontAwesomeIcon className="pe-2" icon="map-location" size="lg" />
+              {isMapView ? "Map view" : "Predictor view"}
             </button>
             <button type="button" className="btn btn-success">
               <FontAwesomeIcon className='pe-2' icon="file-csv" size="lg"></FontAwesomeIcon>

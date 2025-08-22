@@ -3,8 +3,10 @@ from fetch_data import fetchAndSaveCsv
 from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteOldAvgWeekData
 from model_management import deleteOldModel, trainModel
 from predict_management import predictModel, convertToPng
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/predict', methods=['POST'])
 def fetch_route():
@@ -44,9 +46,9 @@ def fetch_route():
     # insertLatestDate(currentDate)
     return jsonify({'status': 'success'})
 
-@app.route('/predict/<indexType>', methods=['GET'])
-def predict_picture(indexType):
-    return send_file(f"model/{indexType}/2025-week45-predicted.png", mimetype="image/png")
+@app.route('/predict/<indexType>/<predictedWeek>', methods=['GET'])
+def predict_picture(indexType, predictedWeek):
+    return send_file(f"model/{indexType}/{predictedWeek}-predicted.png", mimetype="image/png")
 
 if __name__ == '__main__':
     app.run(debug=True)
