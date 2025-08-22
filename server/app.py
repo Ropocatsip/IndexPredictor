@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_file
 from fetch_data import fetchAndSaveCsv
 from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteOldAvgWeekData
 from model_management import deleteOldModel, trainModel
@@ -43,6 +43,10 @@ def fetch_route():
 
     # insertLatestDate(currentDate)
     return jsonify({'status': 'success'})
+
+@app.route('/predict/<indexType>', methods=['GET'])
+def predict_picture(indexType):
+    return send_file(f"model/{indexType}/2025-week45-predicted.png", mimetype="image/png")
 
 if __name__ == '__main__':
     app.run(debug=True)
