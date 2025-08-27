@@ -23,12 +23,24 @@ ChartJS.register(
   Legend
 );
 
+interface IndexData {
+  week: string;
+  data: number;
+}
+
+interface NdviDocument {
+  _id: string;
+  xAxis: number;
+  yAxis: number;
+  indexData: IndexData[];
+}
+
 type MyChartProps = {
   type: string;
+  ndviDocument: NdviDocument | null;
 };
 
-
-const MyChart = ({ type }: MyChartProps) => {
+const MyChart = ({ type, ndviDocument }: MyChartProps) => {
   const options: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
@@ -37,10 +49,13 @@ const MyChart = ({ type }: MyChartProps) => {
     }
   };
   
-  const labels = [
-    '2025-week13', '2025-week14', '2025-week15', '2025-week16',
-    '2025-week17', '2025-week18', '2025-week19', '2025-week20', '2025-week45'
-  ];
+  const labels = [] as string[];
+  const datas = [] as number[];
+
+  ndviDocument?.indexData.forEach(index => {
+    labels.push(index.week);
+    datas.push(index.data);
+  });
   
   const data: ChartData<'line'> = {
     labels: labels,
@@ -48,7 +63,7 @@ const MyChart = ({ type }: MyChartProps) => {
       {
           hidden: false,
           label: type,
-          data: [0.63, 0.35, 0.42, 0.58, 0.65, 0.72, 0.78, 0.85, 0.71],
+          data: datas,
           backgroundColor: '#60a5fa',
           borderColor: '#60a5fa',
           pointBackgroundColor: labels.map((_, i) =>

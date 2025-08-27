@@ -36,7 +36,6 @@ export default function NDVI() {
     { id: 20, title: '-0.9', color: '#FF0028' },
     { id: 21, title: '-1.0', color: '#FF0028' }
   ];
-
   
   const now = new Date();
   const jan4 = new Date(now.getFullYear(), 0, 4); // Jan 4 is always in the first ISO week
@@ -55,7 +54,7 @@ export default function NDVI() {
   useEffect(() => {
     const fetchImage = async () => {
       const now = new Date();
-      const weekNumber = 45; // replace with your calculation
+      // const weekNumber = 45; // replace with your calculation
       
       const res = await fetch(
         `http://127.0.0.1:5000/predict/ndvi/${now.getFullYear()}-week${weekNumber}`,
@@ -77,6 +76,41 @@ export default function NDVI() {
 
     fetchImage();
   }, []);
+
+  // NDVI
+  interface IndexData {
+    week: string;
+    data: number;
+  }
+
+  interface NdviDocument {
+    _id: string;
+    xAxis: number;
+    yAxis: number;
+    indexData: IndexData[];
+  }
+
+  const [ndvi, setNdvi] = useState<NdviDocument | null>(null);
+  const [loading, setLoading] = useState(true);
+   useEffect(() => {
+    async function fetchNdvi() {
+      try {
+        const res = await fetch(`/api/ndvi?xAxis=207&yAxis=270`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch");
+        }
+        const data: NdviDocument = await res.json();
+        setNdvi(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchNdvi();
+  }, []);
+
 
   function getPredictedWeekNumber(): number {
     if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
@@ -153,11 +187,11 @@ export default function NDVI() {
         <div className="card-body d-flex flex-column px-5">
           <div className='d-flex flex-row'>
             <FontAwesomeIcon className='pe-2' icon="location-dot" size="lg"></FontAwesomeIcon>
-            <p>ข้อมูลดัชนี NDVI ที่พิกัด 207, 270 </p>
+            <p>ข้อมูลดัชนี NDVI ที่พิกัด {ndvi?.xAxis}, {ndvi?.yAxis} </p>
           </div>
           <div className='d-flex flex-row'>
             <div className='flex-grow-1 flex-column  me-3'>
-              <MyChart type="NDVI" />
+              <MyChart type="NDVI" ndviDocument={ndvi} />
             </div>
             <div className="d-flex flex-column legend-card">
               <div className="legend-item">
