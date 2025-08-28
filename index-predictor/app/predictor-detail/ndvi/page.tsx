@@ -57,7 +57,7 @@ export default function NDVI() {
       // const weekNumber = 45; // replace with your calculation
       
       const res = await fetch(
-        `http://127.0.0.1:5000/predict/ndvi/${now.getFullYear()}-week${weekNumber}`,
+        `http://127.0.0.1:5000/predict/png/ndvi/${now.getFullYear()}-week${weekNumber}`,
         {
           method: "GET",
           cache: "no-store",
@@ -76,6 +76,17 @@ export default function NDVI() {
 
     fetchImage();
   }, []);
+
+  const handleSavePng = () => {
+    if (!imageUrl) return;
+
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = "ndvi.png"; // filename for download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // NDVI
   interface IndexData {
@@ -121,7 +132,6 @@ export default function NDVI() {
     fetchNdvi();
   }, [selected]);
 
-  
   function getPredictedWeekNumber(): number {
     if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
     else return 45;
@@ -158,6 +168,7 @@ export default function NDVI() {
     }
     fetchAllNdvi();
   }, []);
+
 
   return (
     <div className="px-5 py-3">
@@ -260,7 +271,7 @@ export default function NDVI() {
               <FontAwesomeIcon className='pe-2' icon="file-csv" size="lg"></FontAwesomeIcon>
               Save as csv.
             </button>
-            <button type="button" className="btn btn-primary">
+            <button type="button" className="btn btn-primary" disabled={!imageUrl} onClick={handleSavePng}>
               <FontAwesomeIcon className='pe-2' icon="images" size="lg"></FontAwesomeIcon>
               Download png.
             </button>

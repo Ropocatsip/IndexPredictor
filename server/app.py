@@ -46,9 +46,22 @@ def fetch_route():
     # insertLatestDate(currentDate)
     return jsonify({'status': 'success'})
 
-@app.route('/predict/<indexType>/<predictedWeek>', methods=['GET'])
+@app.route('/predict/png/<indexType>/<predictedWeek>', methods=['GET'])
 def predict_picture(indexType, predictedWeek):
     return send_file(f"model/{indexType}/{predictedWeek}-predicted.png", mimetype="image/png")
+
+@app.route('/predict/csv/<indexType>/<predictedWeek>', methods=['GET'])
+def predict_csv(indexType, predictedWeek):
+    # Path to your CSV file
+    file_path = f"model/{indexType}/{predictedWeek}-predicted.csv"
+    
+    # Send CSV file as a download
+    return send_file(
+        file_path,
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f"{predictedWeek}-predicted.csv"
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
