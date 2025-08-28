@@ -5,16 +5,27 @@ import clientPromise from "../../lib/mongodb";
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const xAxis = Number(searchParams.get("xAxis"));
-    const yAxis = Number(searchParams.get("yAxis"));
-
-    if (isNaN(xAxis) || isNaN(yAxis)) {
-      return NextResponse.json({ error: "xAxis and yAxis must be numbers" }, { status: 400 });
-    }
+    const xAxisParam = searchParams.get("xAxis");
+    const yAxisParam = searchParams.get("yAxis");
 
     const client = await clientPromise;
-    const db = client.db("IndexPredictor"); // change to your DB
+    const db = client.db("IndexPredictor");
     const collection = db.collection("ndvi");
+
+    if (!xAxisParam && !yAxisParam) {
+      const docs = await collection.find({}).toArray();
+      return NextResponse.json(docs);
+    }
+
+    const xAxis = Number(xAxisParam);
+    const yAxis = Number(yAxisParam);
+
+    if (isNaN(xAxis) || isNaN(yAxis)) {
+      return NextResponse.json(
+        { error: "xAxis and yAxis must be numbers" },
+        { status: 400 }
+      );
+    }
 
     const doc = await collection.findOne({ xAxis, yAxis });
 
@@ -25,6 +36,9 @@ export async function GET(req: Request) {
     return NextResponse.json(doc);
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

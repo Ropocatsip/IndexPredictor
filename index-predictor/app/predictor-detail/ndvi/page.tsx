@@ -88,6 +88,8 @@ export default function NDVI() {
     xAxis: number;
     yAxis: number;
     indexData: IndexData[];
+    top: number;
+    left: number;
   }
 
   const [ndvi, setNdvi] = useState<NdviDocument | null>(null);
@@ -119,15 +121,43 @@ export default function NDVI() {
     fetchNdvi();
   }, [selected]);
 
-  const locations = [
-    { x: 207, y: 270, top: 50, left: 51 },
-    { x: 150, y: 170, top: 35, left: 29 },
-  ];
-
+  
   function getPredictedWeekNumber(): number {
     if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
     else return 45;
   }
+
+  const [ndviList, setNDVIList] = useState<NdviDocument[] | null>(null);
+  const [locations, setLocations] = useState<
+    { x: number; y: number; top: number; left: number }[]
+  >([]);
+
+  useEffect(() => {
+    async function fetchAllNdvi() {
+      try {
+        setLoading(true); // reset loading before fetch
+        const res = await fetch(`/api/ndvi`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch");
+        }
+        const data: NdviDocument[] = await res.json();
+        const mappedLocations = data.map((doc) => ({
+          x: doc.xAxis,
+          y: doc.yAxis,
+          top: doc.top,
+          left: doc.left,
+        }));
+
+        setNDVIList(data);
+        setLocations(mappedLocations);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAllNdvi();
+  }, []);
 
   return (
     <div className="px-5 py-3">
