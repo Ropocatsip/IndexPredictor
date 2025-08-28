@@ -92,10 +92,19 @@ export default function NDVI() {
 
   const [ndvi, setNdvi] = useState<NdviDocument | null>(null);
   const [loading, setLoading] = useState(true);
-   useEffect(() => {
+  
+  const [selected, setSelected] = useState<{x: number; y: number}>({
+    x: 207,
+    y: 270,
+  });
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  
+  useEffect(() => {
     async function fetchNdvi() {
+      if (!selected) return; // in case selected is null initially
       try {
-        const res = await fetch(`/api/ndvi?xAxis=207&yAxis=270`);
+        setLoading(true); // reset loading before fetch
+        const res = await fetch(`/api/ndvi?xAxis=${selected.x}&yAxis=${selected.y}`);
         if (!res.ok) {
           throw new Error("Failed to fetch");
         }
@@ -108,17 +117,11 @@ export default function NDVI() {
       }
     }
     fetchNdvi();
-  }, []);
-
-  const [selected, setSelected] = useState<{x: number; y: number}>({
-    x: 207,
-    y: 270,
-  });
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  }, [selected]);
 
   const locations = [
-    { x: 207, y: 270, tooltip: "207, 270", top: 50, left: 51 },
-    { x: 150, y: 170, tooltip: "150, 170", top: 35, left: 29 },
+    { x: 207, y: 270, top: 50, left: 51 },
+    { x: 150, y: 170, top: 35, left: 29 },
   ];
 
   function getPredictedWeekNumber(): number {
