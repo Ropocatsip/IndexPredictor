@@ -45,8 +45,7 @@ export default function NDVI() {
   const predictedDateStart = format(startDate, 'dd/MM/yyyy');
   const predictedDateEnd = format(addWeeks(startDate, 1), 'dd/MM/yyyy');
   const [isMapView, setIsMapView] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-  
+
   const toggleView = () => {
     setIsMapView((prev) => !prev); // toggle true/false
   };
@@ -111,6 +110,17 @@ export default function NDVI() {
     fetchNdvi();
   }, []);
 
+  const [selected, setSelected] = useState<{x: number; y: number}>({
+    x: 207,
+    y: 270,
+  });
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const locations = [
+    { x: 207, y: 270, tooltip: "207, 270", top: 50, left: 51 },
+    { x: 150, y: 170, tooltip: "150, 170", top: 35, left: 29 },
+  ];
+
   function getPredictedWeekNumber(): number {
     if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
     else return 45;
@@ -143,41 +153,49 @@ export default function NDVI() {
                     className="border rounded"
                   />
                   {/* Location Icon */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "51%",
-                      transform: "translate(-50%, -50%)",
-                      zIndex: 10,
-                    }}
-                    onMouseEnter={() => setShowTooltip(true)}
-                    onMouseLeave={() => setShowTooltip(false)}
+                  
+                  {locations.map((loc, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        position: "absolute",
+                        top: `${loc.top}%`,
+                        left: `${loc.left}%`,
+                        transform: "translate(-50%, -50%)",
+                        cursor: "pointer",
+                        zIndex: 10,
+                      }}
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                      onClick={() => setSelected({ x: loc.x, y: loc.y })}
                     >
-                    <FontAwesomeIcon
-                      icon={faLocationDot}
-                      style={{ fontSize: "32px", cursor: "pointer" }}
-                    />
-                    {showTooltip && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "-30px",
-                          left: "50%",
-                          transform: "translateX(-50%)",
-                          padding: "6px 10px",
-                          backgroundColor: "black",
-                          color: "white",
-                          borderRadius: "4px",
-                          whiteSpace: "nowrap",
-                          fontSize: "14px",
-                        }}
-                      >
-                        207, 270
-                      </div>
-                    )}
-                  </div>
+                      <FontAwesomeIcon icon={faLocationDot} style={{ fontSize: "32px", color: selected?.x === loc.x && selected?.y === loc.y ? "black" : "white"  }} />
+                      {hoveredIndex === index && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "-30px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            padding: "6px 10px",
+                            backgroundColor: "black",
+                            color: "white",
+                            borderRadius: "4px",
+                            whiteSpace: "nowrap",
+                            fontSize: "14px",
+                          }}
+                        >
+                          {loc.x}, {loc.y}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* <div style={{ marginTop: "400px" }}>
+                    Selected X: {selectedX !== null ? selectedX : "None"}
+                  </div> */}
                 </div>
+                
               ) : (
                 <p>Loading image...</p>
               )}
@@ -249,4 +267,5 @@ export default function NDVI() {
       </div>
     </div>
   );
+
 }
