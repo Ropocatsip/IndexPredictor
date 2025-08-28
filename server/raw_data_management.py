@@ -1,6 +1,6 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from dateutil.relativedelta import relativedelta
 import os
 import pandas as pd
@@ -40,6 +40,23 @@ def getStartDate(currentDate) :
     # startWeek = startDate.isocalendar().week
     print(f"Start Date : {startDate}")
     return startDate
+
+def getPredictedDate(currentDate):
+
+    # get ISO year & week
+    iso_week = currentDate.isocalendar().week
+    iso_year = currentDate.isocalendar().year
+    
+    # push one week
+    if iso_week > 52:   # rollover
+        iso_year += 1
+        iso_week = 1
+    elif iso_week == 20:  
+        iso_week = 45
+    else: 
+        iso_week += 1
+
+    return f"{iso_year}-week{iso_week}"
 
 def insertLatestDate(currentDate):
     data = {
@@ -209,3 +226,52 @@ def fillMissingWeek(indexType, startDate, currentDate):
                 output_file = os.path.join(folder, f'{year}-week{week:02}.csv')
                 interpolated_df.to_csv(output_file)
                 print(f'Generated {output_file}')
+
+def saveIndexFromCsv(indexType, predictedWeek):
+    targetList = [(207, 270), (125, 92)]
+    # Specify the full path to your CSV file
+    folder_path = f"data/{indexType}/weekdata"
+    collection = mydb[indexType]
+    # Read the CSV into a DataFrame
+
+    all_files = sorted([f for f in os.listdir(folder_path) if f.endswith(".csv")])
+
+    # Take the last 8 files
+    last_8_files = all_files[-8:]
+    for target in targetList:
+        x_target = target[0]
+        y_target = target[1]
+        index_data_list = []
+
+        for file_name in last_8_files:
+            week_name = file_name.replace(".csv", "")  # e.g., "2025-week20"
+            file_path = os.path.join(folder_path, file_name)
+            
+            # Load CSV, assuming single value or a specific cell
+            df = pd.read_csv(file_path, index_col=0) 
+            
+            value = df.iloc[x_target-2, y_target]
+            
+            index_data_list.append({
+                "week": week_name,
+                "data": float(value)
+            })
+
+        file_path = f"model/{indexType}/{predictedWeek}-predicted.csv"
+        week_name = predictedWeek
+        df = pd.read_csv(file_path, index_col=0) 
+            
+        value = df.iloc[x_target-2, y_target]
+        
+        index_data_list.append({
+            "week": week_name,
+            "data": float(value)
+        })
+        # Update MongoDB
+        collection.update_one(
+            {"xAxis": x_target, "yAxis": y_target},
+            {"$set": {"indexData": index_data_list, "updateDate": datetime.now()}}
+        )
+        print(f"MongoDB document x: {x_target}, y: {y_target} updated successfully.")
+    
+        # Display the first few rows

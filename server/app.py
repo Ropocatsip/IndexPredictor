@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, send_file
 from fetch_data import fetchAndSaveCsv
-from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteOldAvgWeekData
+from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteOldAvgWeekData, saveIndexFromCsv, getPredictedDate
 from model_management import deleteOldModel, trainModel
 from predict_management import predictModel, convertToPng
 from flask_cors import CORS
@@ -13,33 +13,35 @@ def fetch_route():
     currentDate = getCurrentDate()
     latestDate = getLatestDate()
     startDate = getStartDate(currentDate)
+    predictedWeek = getPredictedDate(currentDate)
 
     if (not isRainy(currentDate)):
         print("not rainy week, start operating ....")
-        # data preparation
-        deleteOldRawData(startDate, "ndvi")
-        deleteOldRawData(startDate, "ndmi")
+        # ---- data preparation ----
+        # deleteOldRawData(startDate, "ndvi")
+        # deleteOldRawData(startDate, "ndmi")
 
-        fetchAndSaveCsv(latestDate, currentDate)
+        # fetchAndSaveCsv(latestDate, currentDate)
 
-        avgRawData("ndvi")
-        avgRawData("ndmi")
+        # avgRawData("ndvi")
+        # avgRawData("ndmi")
 
-        fillMissingWeek("ndvi", startDate, currentDate)
-        fillMissingWeek("ndmi", startDate, currentDate)
+        # fillMissingWeek("ndvi", startDate, currentDate)
+        # fillMissingWeek("ndmi", startDate, currentDate)
 
-        deleteOldAvgWeekData(startDate,"ndvi")
-        deleteOldAvgWeekData(startDate,"ndmi")
+        # deleteOldAvgWeekData(startDate,"ndvi")
+        # deleteOldAvgWeekData(startDate,"ndmi")
 
-        # train model
+        # ---- train model ----
         # deleteOldModel()
         # trainModel("ndvi")
         # trainModel("ndmi")
-        predictModel("ndvi")
-        predictModel("ndmi")
-        convertToPng("ndvi")
-        convertToPng("ndmi")
-        # message = trainModel('NDMI')
+        # predictModel("ndvi")
+        # predictModel("ndmi")
+        # convertToPng("ndvi")
+        # convertToPng("ndmi")
+        saveIndexFromCsv("ndvi", predictedWeek)
+        
     else : 
         print("rainy week, skip operation.")
 
