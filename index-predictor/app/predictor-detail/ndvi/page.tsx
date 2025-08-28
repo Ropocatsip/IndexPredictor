@@ -50,11 +50,11 @@ export default function NDVI() {
     setIsMapView((prev) => !prev); // toggle true/false
   };
 
+  // img
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   useEffect(() => {
     const fetchImage = async () => {
       const now = new Date();
-      // const weekNumber = 45; // replace with your calculation
       
       const res = await fetch(
         `http://127.0.0.1:5000/predict/png/ndvi/${now.getFullYear()}-week${weekNumber}`,
@@ -86,6 +86,48 @@ export default function NDVI() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // csv
+  const [csvData, setCsvData] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchCsv = async () => {
+      const now = new Date();
+
+      const res = await fetch(
+        `http://127.0.0.1:5000/predict/csv/ndvi/${now.getFullYear()}-week${weekNumber}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to fetch CSV");
+        return;
+      }
+
+      const text = await res.text(); // read CSV as text
+      setCsvData(text);
+    };
+
+    fetchCsv();
+  }, []);
+
+  const handleSaveCsv = () => {
+    if (!csvData) return;
+
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ndvi.csv"; // filename for download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url); // clean up
   };
 
   // NDVI
@@ -267,7 +309,7 @@ export default function NDVI() {
               <FontAwesomeIcon className="pe-2" icon="map-location" size="lg" />
               {isMapView ? "Map view" : "Predictor view"}
             </button>
-            <button type="button" className="btn btn-success">
+            <button type="button" className="btn btn-success" disabled={!csvData} onClick={handleSaveCsv}>
               <FontAwesomeIcon className='pe-2' icon="file-csv" size="lg"></FontAwesomeIcon>
               Save as csv.
             </button>
