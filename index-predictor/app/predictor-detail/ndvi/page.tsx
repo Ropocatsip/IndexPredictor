@@ -82,7 +82,7 @@ export default function NDVI() {
 
     const link = document.createElement("a");
     link.href = imageUrl;
-    link.download = "ndvi.png"; // filename for download
+    link.download = "ndvi-week"+ weekNumber + ", " + now.getFullYear() +".png";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -122,12 +122,11 @@ export default function NDVI() {
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = "ndvi.csv"; // filename for download
+    link.download = "ndvi-week"+ weekNumber + ", " + now.getFullYear() +".png";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
-    URL.revokeObjectURL(url); // clean up
+    URL.revokeObjectURL(url);
   };
 
   // NDVI

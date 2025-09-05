@@ -1,3 +1,4 @@
+"use client";
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImages, faFileCsv, faMapLocation, faLocationDot, faSquare } from '@fortawesome/free-solid-svg-icons';
@@ -5,6 +6,8 @@ import MyChart from '../components/my-chart';
 import { getISOWeek, startOfISOWeek, addWeeks, format } from 'date-fns';
 import { GoogleMapView } from '../components/google-map-view';
 import { MapComponent } from '../components/map';
+import { useEffect, useState } from 'react';
+import Image from "next/image";
 
 library.add(faImages, faFileCsv, faMapLocation, faLocationDot, faSquare);
 
@@ -41,11 +44,170 @@ export default function NDMI() {
   const startDate = addWeeks(firstISOWeekStart, weekNumber - 1);
   const predictedDateStart = format(startDate, 'dd/MM/yyyy');
   const predictedDateEnd = format(addWeeks(startDate, 1), 'dd/MM/yyyy');
+  const [isMapView, setIsMapView] = useState(false);
+  
+  const toggleView = () => {
+    setIsMapView((prev) => !prev); 
+  };
+
+  // img
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchImage = async () => {
+      const now = new Date();
+      
+      const res = await fetch(
+        `http://127.0.0.1:5000/predict/png/ndmi/${now.getFullYear()}-week${weekNumber}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to fetch image");
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setImageUrl(url);
+    };
+
+    fetchImage();
+  }, []);
+
+  const handleSavePng = () => {
+    if (!imageUrl) return;
+
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = "ndmi-week"+ weekNumber + ", " + now.getFullYear() +".png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // csv
+  const [csvData, setCsvData] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchCsv = async () => {
+      const now = new Date();
+
+      const res = await fetch(
+        `http://127.0.0.1:5000/predict/csv/ndmi/${now.getFullYear()}-week${weekNumber}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to fetch CSV");
+        return;
+      }
+
+      const text = await res.text(); // read CSV as text
+      setCsvData(text);
+    };
+
+    fetchCsv();
+  }, []);
+
+  const handleSaveCsv = () => {
+    if (!csvData) return;
+
+    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ndmi-week"+ weekNumber + ", " + now.getFullYear() +".csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // NDMI
+  interface IndexData {
+    week: string;
+    data: number;
+  }
+
+  interface NdmiDocument {
+    _id: string;
+    xAxis: number;
+    yAxis: number;
+    indexData: IndexData[];
+    top: number;
+    left: number;
+  }
+  
+  const [ndmi, setNdmi] = useState<NdmiDocument | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<{x: number; y: number}>({
+    x: 207,
+    y: 270,
+  });
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  
+  useEffect(() => {
+    async function fetchNdmi() {
+      if (!selected) return; // in case selected is null initially
+      try {
+        setLoading(true); // reset loading before fetch
+        const res = await fetch(`/api/ndmi?xAxis=${selected.x}&yAxis=${selected.y}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch");
+        }
+        const data: NdmiDocument = await res.json();
+        setNdmi(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchNdmi();
+  }, [selected]);
 
   function getPredictedWeekNumber(): number {
     if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
     else return 45;
   }
+
+  const [ndmiList, setNDMIList] = useState<NdmiDocument[] | null>(null);
+  const [locations, setLocations] = useState<
+    { x: number; y: number; top: number; left: number }[]
+  >([]);
+
+  useEffect(() => {
+    async function fetchAllNdmi() {
+      try {
+        setLoading(true); // reset loading before fetch
+        const res = await fetch(`/api/ndmi`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch");
+        }
+        const data: NdmiDocument[] = await res.json();
+        const mappedLocations = data.map((doc) => ({
+          x: doc.xAxis,
+          y: doc.yAxis,
+          top: doc.top,
+          left: doc.left,
+        }));
+
+        setNDMIList(data);
+        setLocations(mappedLocations);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAllNdmi();
+  }, []);
 
   return (
     <div className="px-5 py-3">
@@ -60,9 +222,66 @@ export default function NDMI() {
           {/* picture */}
           <div className='d-flex flex-row py-3 gap-3'>
             <div className='flex-grow-1'>
-              <GoogleMapView>
-                <MapComponent />
-              </GoogleMapView>
+              {isMapView ? (
+                <GoogleMapView>
+                  <MapComponent />
+                </GoogleMapView>
+              ) : imageUrl ? (
+                <div className="d-flex justify-content-center">
+                  <Image
+                    src={imageUrl}
+                    alt="NDMI Prediction"
+                    width={600}
+                    height={500}     
+                    className="border rounded"
+                  />
+                  {/* Location Icon */}
+                  
+                  {locations.map((loc, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        position: "absolute",
+                        top: `${loc.top}%`,
+                        left: `${loc.left}%`,
+                        transform: "translate(-50%, -50%)",
+                        cursor: "pointer",
+                        zIndex: 10,
+                      }}
+                      onMouseEnter={() => setHoveredIndex(index)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                      onClick={() => setSelected({ x: loc.x, y: loc.y })}
+                    >
+                      <FontAwesomeIcon icon={faLocationDot} style={{ fontSize: "32px", color: selected?.x === loc.x && selected?.y === loc.y ? "black" : "white"  }} />
+                      {hoveredIndex === index && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "-30px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            padding: "6px 10px",
+                            backgroundColor: "black",
+                            color: "white",
+                            borderRadius: "4px",
+                            whiteSpace: "nowrap",
+                            fontSize: "14px",
+                          }}
+                        >
+                          {loc.x}, {loc.y}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* <div style={{ marginTop: "400px" }}>
+                    Selected X: {selectedX !== null ? selectedX : "None"}
+                  </div> */}
+                </div>
+                
+              ) : (
+                <p>Loading image...</p>
+              )}
             </div>
             <div className='d-flex ms-auto'>
               <div className='d-flex justify-content-start flex-column card-color'>
@@ -83,15 +302,15 @@ export default function NDMI() {
           </div>
           {/* button */}
           <div className='d-flex justify-content-center gap-5'>
-            <button type="button" className="btn btn-info">
+            <button type="button" className="btn btn-info" onClick={toggleView}>
               <FontAwesomeIcon className='pe-2' icon="map-location" size="lg"></FontAwesomeIcon>
-              Map view
+               {isMapView ? "Map view" : "Predictor view"}
             </button>
-            <button type="button" className="btn btn-success">
+            <button type="button" className="btn btn-success" disabled={!csvData} onClick={handleSaveCsv}>
               <FontAwesomeIcon className='pe-2' icon="file-csv" size="lg"></FontAwesomeIcon>
               Save as csv.
             </button>
-            <button type="button" className="btn btn-primary">
+            <button type="button" className="btn btn-primary" disabled={!imageUrl} onClick={handleSavePng}>
               <FontAwesomeIcon className='pe-2' icon="images" size="lg"></FontAwesomeIcon>
               Download png.
             </button>
@@ -103,11 +322,11 @@ export default function NDMI() {
         <div className="card-body d-flex flex-column px-5">
           <div className='d-flex flex-row'>
             <FontAwesomeIcon className='pe-2' icon="location-dot" size="lg"></FontAwesomeIcon>
-            <p>ข้อมูลดัชนี NDMI ที่พิกัด 207, 270 </p>
+            <p>ข้อมูลดัชนี NDMI ที่พิกัด {ndmi?.xAxis}, {ndmi?.yAxis}</p>
           </div>
           <div className='d-flex flex-row'>
             <div className='flex-grow-1 flex-column  me-3'>
-              <MyChart type="NDMI" />
+              <MyChart type="NDMI" ndviDocument={ndmi} />
             </div>
             <div className="d-flex flex-column legend-card">
               <div className="legend-item">
