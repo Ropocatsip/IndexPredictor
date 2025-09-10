@@ -40,8 +40,8 @@ def fetch_route():
         # predictModel("ndmi")
         # convertToPng("ndvi")
         # convertToPng("ndmi")
-        # saveIndexFromCsv("ndvi", predictedWeek)
-        saveIndexFromCsv("ndmi", predictedWeek)
+        saveIndexFromCsv("ndvi", predictedWeek)
+        # saveIndexFromCsv("ndmi", predictedWeek)
         
     else : 
         print("rainy week, skip operation.")

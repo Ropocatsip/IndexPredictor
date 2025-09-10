@@ -159,29 +159,32 @@ def get_year_week(filename):
     week = int(parts[1].split('.csv')[0])
     return year, week
 
-def linear_interpolation(existing_data, existing_weeks, year, target_week, data_dict):
+def linear_interpolation(existing_weeks, year, target_week, data_dict):
     """Interpolates values for the target week based on existing weeks and data, considering cross-year interpolation."""
     lower_week = max([w for w in existing_weeks if w < target_week], default=None)
     upper_week = min([w for w in existing_weeks if w > target_week], default=None)
     
     if lower_week is None:
         prev_year = year - 1
-        if prev_year in data_dict and 52 in data_dict[prev_year]:
-            return (data_dict[prev_year][52] + data_dict[year][upper_week]) / 2
+        if prev_year in data_dict and data_dict[prev_year]:
+            last_prev_week = max(data_dict[prev_year].keys())
+            return (data_dict[prev_year][last_prev_week] + data_dict[year][upper_week]) / 2
         return data_dict[year][upper_week]
     
     if upper_week is None:
-        next_year = year + 1
-        if next_year in data_dict and 1 in data_dict[next_year]:
-            return (data_dict[year][lower_week] + data_dict[next_year][1]) / 2
+        sorted_weeks = sorted(existing_weeks)
+        if len(sorted_weeks) >= 2:
+            w1, w2 = sorted_weeks[-2], sorted_weeks[-1]
+            v1, v2 = data_dict[year][w1], data_dict[year][w2]
+            slope = (v2 - v1) / (w2 - w1)
+            extrapolated_data = v2 + slope * (target_week - w2)
+            return extrapolated_data
         return data_dict[year][lower_week]
     
     lower_data = data_dict[year][lower_week]
     upper_data = data_dict[year][upper_week]
-    
     weight = (target_week - lower_week) / (upper_week - lower_week)
     interpolated_data = lower_data + weight * (upper_data - lower_data)
-    
     return interpolated_data
 
 def fillMissingWeek(indexType, startDate, currentDate):
@@ -221,7 +224,7 @@ def fillMissingWeek(indexType, startDate, currentDate):
             week_start_date = datetime.strptime(f'{year}-W{week-1}-1', "%Y-W%W-%w").date()
             # Only generate if within startDate and currentDate
             if startDate.date() <= week_start_date <= currentDate.date():
-                interpolated_values = linear_interpolation(data_dict, existing_weeks[year], year, week, data_dict)
+                interpolated_values = linear_interpolation(existing_weeks[year], year, week, data_dict)
                 interpolated_df = pd.DataFrame(interpolated_values, columns=df.columns, index=df.index)
                 output_file = os.path.join(folder, f'{year}-week{week:02}.csv')
                 interpolated_df.to_csv(output_file)

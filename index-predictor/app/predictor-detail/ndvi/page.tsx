@@ -306,7 +306,7 @@ export default function NDVI() {
           <div className='d-flex justify-content-center gap-5'>
             <button type="button" className="btn btn-info" onClick={toggleView}>
               <FontAwesomeIcon className="pe-2" icon="map-location" size="lg" />
-              {isMapView ? "Map view" : "Predictor view"}
+              {isMapView ? "Predictor view": "Map view" }
             </button>
             <button type="button" className="btn btn-success" disabled={!csvData} onClick={handleSaveCsv}>
               <FontAwesomeIcon className='pe-2' icon="file-csv" size="lg"></FontAwesomeIcon>
