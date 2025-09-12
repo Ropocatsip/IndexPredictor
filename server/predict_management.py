@@ -5,7 +5,7 @@ import re
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import load_model
 import matplotlib.cm as cm
-from PIL import Image
+from PIL import Image, ImageDraw
 
 sequence_length = 6 
 
@@ -53,7 +53,6 @@ def predictModel(indexType):
 
     # === TAKE LAST SEQUENCE ===
     last_weeks = weeks_sorted[-sequence_length:]       # last 6 weeks
-    print(f"debug : {last_weeks[-1][1]}")
     if last_weeks[-1][1] == 52:
         next_week = (last_weeks[-1][0], 1) 
     elif last_weeks[-1][1] == 20:
@@ -91,36 +90,40 @@ def convertToPng(indexType):
     # === FIND THE ONLY CSV FILE IN FOLDER ===
     csv_files = [f for f in os.listdir(output_folder) if f.endswith(".csv")]
     if not csv_files:
-        raise FileNotFoundError("No CSV file found in model/ndvi folder.")
+        raise FileNotFoundError(f"No CSV file found in model/{indexType} folder.")
     csv_file = os.path.join(output_folder, csv_files[0])  # take the first (only) file
 
     # === LOAD CSV ===
     df = pd.read_csv(csv_file)
-    ndvi = df.values  # convert to numpy array
+    index = df.values  # convert to numpy array
 
-    # === THRESHOLD for background ===
-
-    threshold = 0.065  # values below this are "not interested"
-    mask = np.abs(ndvi) < threshold   # boolean mask
+    polygon = [(88, 110), (273, 164), (274, 252), (89, 226)]
+    # Create polygon mask
+    mask_img = Image.new("L", (index.shape[1], index.shape[0]), 0)
+    ImageDraw.Draw(mask_img).polygon(polygon, outline=1, fill=1)
+    polygon_mask = np.array(mask_img).astype(bool)  # True = inside polygon
 
     # === NORMALIZE to [0,1] ===
     if indexType == "ndvi":
         index_min, index_max = 0, 1.0
     else: 
         index_min, index_max = -1.0, 1.0
-    index_norm = (ndvi - index_min) / (index_max - index_min + 1e-8)
+
+    index_norm = np.zeros_like(index, dtype=float)
+    index_norm[polygon_mask] = (index[polygon_mask] - index_min) / (index_max - index_min + 1e-8)
     index_norm = np.clip(index_norm, 0, 1)
+    # index_norm = (index - index_min) / (index_max - index_min + 1e-8)
+    # index_norm = np.clip(index_norm, 0, 1)
     
     # === CONVERT TO 8-BIT RGB IMAGE ===
     colored = cm.gist_rainbow(index_norm)[:, :, :3] * 255
     image_rgb = colored.astype(np.uint8)
 
     # === SET BACKGROUND TO GRAY ===
-    image_rgb[mask] = [128, 128, 128]
+    image_rgb[~polygon_mask] = [128, 128, 128]
 
     # === SAVE PNG ===
     base_name = os.path.splitext(csv_files[0])[0]  # remove .csv
-    # output_path = os.path.join(output_folder, f"test.png")
     output_path = os.path.join(output_folder, f"{base_name}.png")
     Image.fromarray(image_rgb).save(output_path)
 

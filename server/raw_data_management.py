@@ -69,7 +69,6 @@ def deleteOldRawData(startDate, indexType):
 
     # storage or raw data location file
     folder_path = f"data/{indexType}/rawdata"
-
     for filename in os.listdir(folder_path):
         if filename.endswith(".csv"):
             try:
@@ -171,14 +170,10 @@ def linear_interpolation(existing_weeks, year, target_week, data_dict):
             return (data_dict[prev_year][last_prev_week] + data_dict[year][upper_week]) / 2
         return data_dict[year][upper_week]
     
-    if upper_week is None:
-        sorted_weeks = sorted(existing_weeks)
-        if len(sorted_weeks) >= 2:
-            w1, w2 = sorted_weeks[-2], sorted_weeks[-1]
-            v1, v2 = data_dict[year][w1], data_dict[year][w2]
-            slope = (v2 - v1) / (w2 - w1)
-            extrapolated_data = v2 + slope * (target_week - w2)
-            return extrapolated_data
+    if upper_week is None: 
+        next_year = year + 1 
+        if next_year in data_dict and 1 in data_dict[next_year]:
+            return (data_dict[year][lower_week] + data_dict[next_year][1]) / 2 
         return data_dict[year][lower_week]
     
     lower_data = data_dict[year][lower_week]
