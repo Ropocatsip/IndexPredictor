@@ -8,25 +8,6 @@ from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
 
-def deleteOldModel():
-    # Path to your folder
-    indexTypes = ["ndvi", "ndmi"]
-    for indexType in indexTypes:
-        folder_path = f"models/{indexType}"
-
-        # File to delete
-        file_name = "cnn_lstm_n6.h5"
-
-        # Full path
-        file_path = os.path.join(folder_path, file_name)
-
-        # Check if file exists before deleting
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            print(f"{file_name} deleted successfully.")
-        else:
-            print(f"{file_name} does not exist in {folder_path}.")
-
 def splitTrainAndValidateData(folder):
     # Regex to extract year and week from filenames
     pattern = re.compile(r"(\d{4})-week(\d{2})\.csv")

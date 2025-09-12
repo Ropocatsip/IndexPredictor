@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, send_file
+from flask_apscheduler import APScheduler
 from fetch_data import fetchAndSaveCsv
 from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteOldAvgWeekData, saveIndexFromCsv, getPredictedDate
 from model_management import deleteOldModel, trainModel
@@ -7,6 +8,13 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+class Config:
+    SCHEDULER_API_ENABLED = True
+
+app.config.from_object(Config)
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 @app.route('/predict', methods=['POST'])
 def fetch_route():
@@ -18,30 +26,29 @@ def fetch_route():
     if (not isRainy(currentDate)):
         print("not rainy week, start operating ....")
         # ---- data preparation ----
-        # deleteOldRawData(startDate, "ndvi")
-        # deleteOldRawData(startDate, "ndmi")
+        deleteOldRawData(startDate, "ndvi")
+        deleteOldRawData(startDate, "ndmi")
 
-        # fetchAndSaveCsv(latestDate, currentDate)
+        fetchAndSaveCsv(latestDate, currentDate)
 
-        # avgRawData("ndvi")
-        # avgRawData("ndmi")
+        avgRawData("ndvi")
+        avgRawData("ndmi")
 
-        # fillMissingWeek("ndvi", startDate, currentDate)
-        # fillMissingWeek("ndmi", startDate, currentDate)
+        fillMissingWeek("ndvi", startDate, currentDate)
+        fillMissingWeek("ndmi", startDate, currentDate)
 
-        # deleteOldAvgWeekData(startDate,"ndvi")
-        # deleteOldAvgWeekData(startDate,"ndmi")
+        deleteOldAvgWeekData(startDate,"ndvi")
+        deleteOldAvgWeekData(startDate,"ndmi")
 
         # ---- train model ----
-        # deleteOldModel()
         # trainModel("ndvi")
         # trainModel("ndmi")
-        # predictModel("ndvi")
-        # predictModel("ndmi")
-        # convertToPng("ndvi")
-        # convertToPng("ndmi")
+        predictModel("ndvi")
+        predictModel("ndmi")
+        convertToPng("ndvi")
+        convertToPng("ndmi")
         saveIndexFromCsv("ndvi", predictedWeek)
-        # saveIndexFromCsv("ndmi", predictedWeek)
+        saveIndexFromCsv("ndmi", predictedWeek)
         
     else : 
         print("rainy week, skip operation.")
@@ -65,6 +72,8 @@ def predict_csv(indexType, predictedWeek):
         as_attachment=True,
         download_name=f"{predictedWeek}-predicted.csv"
     )
+
+scheduler.add_job(id='weekly_job', func=fetch_route, trigger='cron', day_of_week='sun', hour=23, minute=0)
 
 if __name__ == '__main__':
     app.run(debug=True)
