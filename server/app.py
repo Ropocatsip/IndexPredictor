@@ -48,6 +48,7 @@ def fetch_route():
         # convertToPng("ndvi")
         # convertToPng("ndmi")
         mergeBetweenIndexAndRaster(predictedWeek, "ndvi")
+        mergeBetweenIndexAndRaster(predictedWeek, "ndmi")
         # saveIndexFromCsv("ndvi", predictedWeek)
         # saveIndexFromCsv("ndmi", predictedWeek)
         
@@ -59,7 +60,7 @@ def fetch_route():
 
 @app.route('/predict/png/<indexType>/<predictedWeek>', methods=['GET'])
 def predict_picture(indexType, predictedWeek):
-    return send_file(f"model/{indexType}/{predictedWeek}-predicted.png", mimetype="image/png")
+    return send_file(f"model/{indexType}/{predictedWeek}-merged.png", mimetype="image/png")
 
 @app.route('/predict/csv/<indexType>/<predictedWeek>', methods=['GET'])
 def predict_csv(indexType, predictedWeek):
