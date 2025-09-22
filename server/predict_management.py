@@ -128,4 +128,36 @@ def convertToPng(indexType):
     Image.fromarray(image_rgb).save(output_path)
 
     print(f"Saved PNG: {output_path}")
+
+def mergeBetweenIndexAndRaster(predictedWeek, indexType):
+    # Load images
+    background = Image.open("data/raster/latest_rgb.jpeg").convert("RGBA")   # your first image
+    overlay = Image.open(f'model/{indexType}/{predictedWeek}-predicted.png').convert("RGBA") # your second image
+
+    # Make gray background transparent
+    datas = overlay.getdata()
+    new_data = []
+    for item in datas:
+        # Detect gray (approx 128,128,128, adjust thresholds if needed)
+        if 100 < item[0] < 160 and 100 < item[1] < 160 and 100 < item[2] < 160:
+            new_data.append((255, 255, 255, 0))  # transparent
+        else:
+            new_data.append(item)
+    overlay.putdata(new_data)
+
+    # Resize overlay to match background
+    overlay_resized = overlay.resize(background.size)
+    alpha = 0.5  # 20% visible (80% transparent)
+    # Create new image with reduced alpha
+    r, g, b, a = overlay_resized.split()
+    # Reduce alpha channel
+    a = a.point(lambda p: int(p * alpha))
+    # Merge back
+    overlay_with_alpha = Image.merge("RGBA", (r, g, b, a))
+
+    # Merge images
+    merged = Image.alpha_composite(background, overlay_with_alpha)
+
+    # Save result
+    merged.save(f"model/{indexType}/{predictedWeek}-merged.png")
         

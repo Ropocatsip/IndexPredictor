@@ -6,6 +6,7 @@ import pandas as pd
 import datetime
 from PIL import Image
 from matplotlib import cm
+import rasterio
 
 service_account = 'opor-earthengine@master-project-nudthaya.iam.gserviceaccount.com'
 credentials = ee.ServiceAccountCredentials(service_account, 'master-project-nudthaya-b00cfbf908da.json')
@@ -73,41 +74,9 @@ def canopy(studyArea) :
     forest=canopy
     return forest
 
-# def saveCanopy(): 
-#     forestmask = canopy(studyArea).mask()#.clip(studyArea) 
-#         #imageSen1VV = image 
-
-#     forestmask = canopy(studyArea).mask()#.clip(studyArea) 
-#     forest= canopy(studyArea)
-#     forest =forest.And(forestmask)
-
-#     url = forest.getDownloadUrl({
-#             'bands': ['cover_code'],
-#             'region': studyAreaRGB,
-#             'scale': 1,
-#             'format': 'NPY'
-#     })
-#     response = requests.get(url)
-#     data = numpy.load(io.BytesIO(response.content))
-#     # print(data)
-#     # print(data.dtype)
-#     # print(type(data))
-#     # print(data.shape)
-#     index = ['Row'+str(i) for i in range(1, len(data)+1)]
-#     vv=data['cover_code']
-
-#     vv_norm = (vv-numpy.min(vv))/(numpy.max(vv)-numpy.min(vv))  
-#     # print("VV")
-#     # print(vv)
-#     im = Image.fromarray(numpy.uint8(cm.gist_rainbow(vv_norm)*255))
-#     im.save("img/canopy.png")
-#     # im.save("/var/www/html/Rayong02/image/canopy.png")
-
-#     DF = pd.DataFrame(vv) 
-#     # print(DF)
-
-#         # save the dataframe as a csv file 
-#     DF.to_csv("img/canopy.csv")
+def normalize(band):
+    band_min, band_max = (band.min(), band.max())
+    return ((band-band_min)/((band_max - band_min)))
 
 def fetchAndSaveCsv(startDate, endDate):
 
@@ -165,3 +134,54 @@ def fetchAndSaveCsv(startDate, endDate):
         DFNDMI.to_csv('data/ndmi/rawdata/' + image_name + "_ndmi.csv")
 
         print("ndvi and ndmi saved for " + timestring)
+
+def fetchAndSaveRasterCsv(startDate, endDate):
+
+    startDate = ee.Date.fromYMD(startDate.year, startDate.month, startDate.day)
+    endDate = ee.Date.fromYMD(endDate.year, endDate.month, endDate.day)
+    
+    s2 = importFarmManagement(studyArea, startDate, endDate)
+    try:
+        collectionList = s2.toList(s2.size())
+        collectionSize = collectionList.size().getInfo()
+        print(f"There are {collectionSize} files.")
+
+    except Exception as e:
+        print("There are no new data.")
+        print(e)
+        return 0
+
+    last_index = collectionList.size().subtract(1)
+    image = ee.Image(collectionList.get(last_index))
+
+    imageRGB = image
+    url = imageRGB.getDownloadUrl({
+        'bands': ['B4', 'B3', 'B2'],
+        'region': studyAreaRGB,
+        'scale': 1,
+        'format': 'GEO_TIFF'
+    })
+    response = requests.get(url)
+    filenameTif = 'data/raster/latest_rgb.tif'
+    with open(filenameTif, 'wb') as fd:
+        fd.write(response.content)
+
+    dataset = rasterio.open(filenameTif)
+    img=dataset.read(1)
+    red = dataset.read(1)
+    green = dataset.read(2)
+    blue = dataset.read(3)
+
+    imgdataRed = numpy.array(red)
+    imgdataGreen = numpy.array(green)
+    imgdataBlue = numpy.array(blue)
+
+    red_n = normalize(imgdataRed)
+    green_n = normalize(imgdataGreen)
+    blue_n = normalize(imgdataBlue)
+
+    imgdata= numpy.dstack((red_n, green_n, blue_n))
+    rgb = (numpy.dstack((red_n,green_n,blue_n)) * 255.999) .astype(numpy.uint8)
+
+    img = Image.fromarray(rgb)
+    img.save('data/raster/latest_rgb.jpeg')

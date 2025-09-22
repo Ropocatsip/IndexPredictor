@@ -1,9 +1,9 @@
 from flask import Flask, jsonify, send_file
 from flask_apscheduler import APScheduler
-from fetch_data import fetchAndSaveCsv
+from fetch_data import fetchAndSaveCsv, fetchAndSaveRasterCsv
 from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteOldAvgWeekData, saveIndexFromCsv, getPredictedDate
 from model_management import trainModel
-from predict_management import predictModel, convertToPng
+from predict_management import predictModel, convertToPng, mergeBetweenIndexAndRaster
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -30,7 +30,7 @@ def fetch_route():
         # deleteOldRawData(startDate, "ndmi")
 
         # fetchAndSaveCsv(latestDate, currentDate)
-
+        # fetchAndSaveRasterCsv(latestDate, currentDate)
         # avgRawData("ndvi")
         # avgRawData("ndmi")
 
@@ -45,15 +45,16 @@ def fetch_route():
         # trainModel("ndmi")
         # predictModel("ndvi")
         # predictModel("ndmi")
-        convertToPng("ndvi")
-        convertToPng("ndmi")
+        # convertToPng("ndvi")
+        # convertToPng("ndmi")
+        mergeBetweenIndexAndRaster(predictedWeek, "ndvi")
         # saveIndexFromCsv("ndvi", predictedWeek)
         # saveIndexFromCsv("ndmi", predictedWeek)
         
     else : 
         print("rainy week, skip operation.")
 
-    insertLatestDate(currentDate)
+    # insertLatestDate(currentDate)
     return jsonify({'status': 'success'})
 
 @app.route('/predict/png/<indexType>/<predictedWeek>', methods=['GET'])
