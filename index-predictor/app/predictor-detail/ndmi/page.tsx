@@ -57,7 +57,7 @@ export default function NDMI() {
       const now = new Date();
       
       const res = await fetch(
-        `http://0.0.0.0:8000/predict/png/ndmi/${now.getFullYear()}-week${weekNumber}`,
+        `${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/predict/png/ndmi/${now.getFullYear()}-week${weekNumber}`,
         {
           method: "GET",
           cache: "no-store",
@@ -95,7 +95,7 @@ export default function NDMI() {
       const now = new Date();
 
       const res = await fetch(
-        `http://0.0.0.0:8000/predict/csv/ndmi/${now.getFullYear()}-week${weekNumber}`,
+        `${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/predict/csv/ndmi/${now.getFullYear()}-week${weekNumber}`,
         {
           method: "GET",
           cache: "no-store",

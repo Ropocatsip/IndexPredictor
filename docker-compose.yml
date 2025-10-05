@@ -4,9 +4,15 @@ services:
       context: ./index-predictor
       args:
         NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+        NEXT_PUBLIC_FLASK_BASE_URL: ${NEXT_PUBLIC_FLASK_BASE_URL}
     environment:
+      FLASK_INTERNAL_ORIGIN: http://ml:8000
       MONGODB_URI: ${MONGODB_URI}
-    ports:
-      - "3000:3000"
+    ports: ["3000:3000"]
+    depends_on: [ml]
     restart: unless-stopped
-    
+
+  ml:
+    build: ./server
+    expose: ["8000"]
+    restart: unless-stopped

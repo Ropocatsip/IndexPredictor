@@ -26,36 +26,36 @@ def fetch_route():
     if (not isRainy(currentDate)):
         print("not rainy week, start operating ....")
         # ---- data preparation ----
-        # deleteOldRawData(startDate, "ndvi")
-        # deleteOldRawData(startDate, "ndmi")
+        deleteOldRawData(startDate, "ndvi")
+        deleteOldRawData(startDate, "ndmi")
 
-        # fetchAndSaveCsv(latestDate, currentDate)
-        # fetchAndSaveRasterCsv(latestDate, currentDate)
-        # avgRawData("ndvi")
-        # avgRawData("ndmi")
+        fetchAndSaveCsv(latestDate, currentDate)
+        fetchAndSaveRasterCsv(latestDate, currentDate)
+        avgRawData("ndvi")
+        avgRawData("ndmi")
 
-        # fillMissingWeek("ndvi", startDate, currentDate)
-        # fillMissingWeek("ndmi", startDate, currentDate)
+        fillMissingWeek("ndvi", startDate, currentDate)
+        fillMissingWeek("ndmi", startDate, currentDate)
 
-        # deleteOldAvgWeekData(startDate,"ndvi")
-        # deleteOldAvgWeekData(startDate,"ndmi")
+        deleteOldAvgWeekData(startDate,"ndvi")
+        deleteOldAvgWeekData(startDate,"ndmi")
 
         # ---- train model ----
-        # trainModel("ndvi")
-        # trainModel("ndmi")
-        # predictModel("ndvi")
-        # predictModel("ndmi")
-        # convertToPng("ndvi")
-        # convertToPng("ndmi")
+        trainModel("ndvi")
+        trainModel("ndmi")
+        predictModel("ndvi")
+        predictModel("ndmi")
+        convertToPng("ndvi")
+        convertToPng("ndmi")
         mergeBetweenIndexAndRaster(predictedWeek, "ndvi")
         mergeBetweenIndexAndRaster(predictedWeek, "ndmi")
-        # saveIndexFromCsv("ndvi", predictedWeek)
-        # saveIndexFromCsv("ndmi", predictedWeek)
+        saveIndexFromCsv("ndvi", predictedWeek)
+        saveIndexFromCsv("ndmi", predictedWeek)
         
     else : 
         print("rainy week, skip operation.")
 
-    # insertLatestDate(currentDate)
+    insertLatestDate(currentDate)
     return jsonify({'status': 'success'})
 
 @app.route('/predict/png/<indexType>/<predictedWeek>', methods=['GET'])
@@ -75,7 +75,7 @@ def predict_csv(indexType, predictedWeek):
         download_name=f"{predictedWeek}-predicted.csv"
     )
 
-scheduler.add_job(id='weekly_job', func=fetch_route, trigger='cron', day_of_week='sun', hour=23, minute=0)
+# scheduler.add_job(id='weekly_job', func=fetch_route, trigger='cron', day_of_week='sun', hour=23, minute=0)
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True, host="0.0.0.0")
