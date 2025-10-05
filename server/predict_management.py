@@ -147,7 +147,7 @@ def mergeBetweenIndexAndRaster(predictedWeek, indexType):
 
     # Resize overlay to match background
     overlay_resized = overlay.resize(background.size)
-    alpha = 0.8  # 20% visible (80% transparent)
+    alpha = 0.65  # 35% visible (65% transparent)
     # Create new image with reduced alpha
     r, g, b, a = overlay_resized.split()
     # Reduce alpha channel
