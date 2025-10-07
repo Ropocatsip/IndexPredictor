@@ -9,11 +9,33 @@ services:
       FLASK_INTERNAL_ORIGIN: http://ml:8000
       MONGODB_URI: ${MONGODB_URI}
     ports: ["3000:3000"]
-    depends_on: [ml]
+    depends_on: [ml, mongo]
     restart: unless-stopped
 
   ml:
     build: ./server
-    ports:
-      - "8000:8000"
+    environment:
+      MMONGODB_URI: ${MONGODB_URI}
+    ports: ["8000:8000"]
+    depends_on: [mongo]
     restart: unless-stopped
+
+  mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS:-1234}
+      MONGO_INITDB_DATABASE: indexdb
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo_data:
