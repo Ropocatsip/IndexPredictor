@@ -147,37 +147,16 @@ export default function NDVI() {
   const [ndvi, setNdvi] = useState<NdviDocument | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const [selected, setSelected] = useState<{x: number; y: number}>({
-    x: 207,
-    y: 270,
-  });
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   
-  useEffect(() => {
-    async function fetchNdvi() {
-      if (!selected) return; // in case selected is null initially
-      try {
-        setLoading(true); // reset loading before fetch
-        const res = await fetch(`/api/index/ndvi?xAxis=${selected.x}&yAxis=${selected.y}`);
-        if (!res.ok) {
-          throw new Error("Failed to fetch");
-        }
-        const data: NdviDocument = await res.json();
-        setNdvi(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchNdvi();
-  }, [selected]);
+  
 
   function getPredictedWeekNumber(): number {
     if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
     else return 45;
   }
 
+  const [selected, setSelected] = useState<{ x: number; y: number } | null>(null);
   const [ndviList, setNDVIList] = useState<NdviDocument[] | null>(null);
   const [locations, setLocations] = useState<
     { x: number; y: number; top: number; left: number }[]
@@ -201,6 +180,13 @@ export default function NDVI() {
 
         setNDVIList(data);
         setLocations(mappedLocations);
+
+        if (data.length > 0) {
+          setSelected({
+            x: data[0].xAxis,
+            y: data[0].yAxis,
+          });
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -209,7 +195,26 @@ export default function NDVI() {
     }
     fetchAllNdvi();
   }, []);
-
+  
+  useEffect(() => {
+    async function fetchNdvi() {
+      if (!selected) return; // in case selected is null initially
+      try {
+        setLoading(true); // reset loading before fetch
+        const res = await fetch(`/api/index/ndvi?xAxis=${selected.x}&yAxis=${selected.y}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch");
+        }
+        const data: NdviDocument = await res.json();
+        setNdvi(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchNdvi();
+  }, [selected]);
 
   return (
     <div className="px-5 py-3">

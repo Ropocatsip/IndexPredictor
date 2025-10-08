@@ -146,37 +146,17 @@ export default function NDMI() {
   
   const [ndmi, setNdmi] = useState<NdmiDocument | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<{x: number; y: number}>({
-    x: 207,
-    y: 270,
-  });
+  
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   
-  useEffect(() => {
-    async function fetchNdmi() {
-      if (!selected) return; // in case selected is null initially
-      try {
-        setLoading(true); // reset loading before fetch
-        const res = await fetch(`/api/index/ndmi?xAxis=${selected.x}&yAxis=${selected.y}`);
-        if (!res.ok) {
-          throw new Error("Failed to fetch");
-        }
-        const data: NdmiDocument = await res.json();
-        setNdmi(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchNdmi();
-  }, [selected]);
+  
 
   function getPredictedWeekNumber(): number {
     if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
     else return 45;
   }
 
+  const [selected, setSelected] = useState<{ x: number; y: number } | null>(null);
   const [ndmiList, setNDMIList] = useState<NdmiDocument[] | null>(null);
   const [locations, setLocations] = useState<
     { x: number; y: number; top: number; left: number }[]
@@ -200,6 +180,12 @@ export default function NDMI() {
 
         setNDMIList(data);
         setLocations(mappedLocations);
+        if (data.length > 0) {
+          setSelected({
+            x: data[0].xAxis,
+            y: data[0].yAxis,
+          });
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -208,6 +194,26 @@ export default function NDMI() {
     }
     fetchAllNdmi();
   }, []);
+
+  useEffect(() => {
+    async function fetchNdmi() {
+      if (!selected) return; // in case selected is null initially
+      try {
+        setLoading(true); // reset loading before fetch
+        const res = await fetch(`/api/index/ndmi?xAxis=${selected.x}&yAxis=${selected.y}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch");
+        }
+        const data: NdmiDocument = await res.json();
+        setNdmi(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchNdmi();
+  }, [selected]);
 
   return (
     <div className="px-5 py-3">
