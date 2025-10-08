@@ -157,7 +157,7 @@ export default function NDMI() {
       if (!selected) return; // in case selected is null initially
       try {
         setLoading(true); // reset loading before fetch
-        const res = await fetch(`/api/ndmi?xAxis=${selected.x}&yAxis=${selected.y}`);
+        const res = await fetch(`/api/index/ndmi?xAxis=${selected.x}&yAxis=${selected.y}`);
         if (!res.ok) {
           throw new Error("Failed to fetch");
         }
@@ -186,7 +186,7 @@ export default function NDMI() {
     async function fetchAllNdmi() {
       try {
         setLoading(true); // reset loading before fetch
-        const res = await fetch(`/api/ndmi`);
+        const res = await fetch(`/api/index/ndmi`);
         if (!res.ok) {
           throw new Error("Failed to fetch");
         }

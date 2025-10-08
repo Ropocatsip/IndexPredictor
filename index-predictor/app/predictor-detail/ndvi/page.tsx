@@ -158,7 +158,7 @@ export default function NDVI() {
       if (!selected) return; // in case selected is null initially
       try {
         setLoading(true); // reset loading before fetch
-        const res = await fetch(`/api/ndvi?xAxis=${selected.x}&yAxis=${selected.y}`);
+        const res = await fetch(`/api/index/ndvi?xAxis=${selected.x}&yAxis=${selected.y}`);
         if (!res.ok) {
           throw new Error("Failed to fetch");
         }
@@ -187,7 +187,7 @@ export default function NDVI() {
     async function fetchAllNdvi() {
       try {
         setLoading(true); // reset loading before fetch
-        const res = await fetch(`/api/ndvi`);
+        const res = await fetch(`/api/index/ndvi`);
         if (!res.ok) {
           throw new Error("Failed to fetch");
         }
