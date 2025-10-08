@@ -228,55 +228,72 @@ export default function NDMI() {
                 </GoogleMapView>
               ) : imageUrl ? (
                 <div className="d-flex justify-content-center">
-                  <Image
-                    src={imageUrl}
-                    alt="NDMI Prediction"
-                    width={600}
-                    height={500}     
-                    className="border rounded"
-                  />
-                  {/* Location Icon */}
-                  
-                  {locations.map((loc, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        position: "absolute",
-                        top: `${loc.top}%`,
-                        left: `${loc.left}%`,
-                        transform: "translate(-50%, -50%)",
-                        cursor: "pointer",
-                        zIndex: 10,
-                      }}
-                      onMouseEnter={() => setHoveredIndex(index)}
-                      onMouseLeave={() => setHoveredIndex(null)}
-                      onClick={() => setSelected({ x: loc.x, y: loc.y })}
-                    >
-                      <FontAwesomeIcon icon={faLocationDot} style={{ fontSize: "32px", color: selected?.x === loc.x && selected?.y === loc.y ? "black" : "white"  }} />
-                      {hoveredIndex === index && (
-                        <div
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "100%",
+                      maxWidth: 600,               // จำกัดความกว้างสูงสุด
+                      aspectRatio: "600 / 500",    // รักษาอัตราส่วนภาพเดิม (กว้าง/สูง)
+                    }}
+                  >
+                    <Image
+                      src={imageUrl}
+                      alt="NDMI Prediction"
+                      fill
+                      style={{ objectFit: "contain" }}
+                      sizes="(max-width: 768px) 92vw, 600px" 
+                      priority
+                    />
+                    {/* Location Icon */}
+                    
+                    {locations.map((loc, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          position: "absolute",
+                          top: `${loc.top}%`,
+                          left: `${loc.left}%`,
+                          transform: "translate(-50%, -100%)",
+                          cursor: "pointer",
+                          zIndex: 10,
+                        }}
+                        onMouseEnter={() => setHoveredIndex(index)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                        onClick={() => setSelected({ x: loc.x, y: loc.y })}
+                      >
+                        <FontAwesomeIcon 
+                          icon={faLocationDot} 
                           style={{
-                            position: "absolute",
-                            top: "-30px",
-                            left: "50%",
-                            transform: "translateX(-50%)",
-                            padding: "6px 10px",
-                            backgroundColor: "black",
-                            color: "white",
-                            borderRadius: "4px",
-                            whiteSpace: "nowrap",
-                            fontSize: "14px",
+                            fontSize: "clamp(18px, 2.5vw, 32px)",
+                            color:
+                              selected?.x === loc.x && selected?.y === loc.y
+                                ? "black"
+                                : "white",
+                            textShadow: "0 0 4px rgba(0,0,0,.6)",
                           }}
-                        >
-                          {loc.x}, {loc.y}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {/* <div style={{ marginTop: "400px" }}>
-                    Selected X: {selectedX !== null ? selectedX : "None"}
-                  </div> */}
+                          // color: selected?.x === loc.x && selected?.y === loc.y ? "black" : "white"  }} 
+                        />
+                        {hoveredIndex === index && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "-8px",
+                              left: "50%",
+                              transform: "translate(-50%, -100%)",
+                              padding: "6px 10px",
+                              backgroundColor: "black",
+                              color: "white",
+                              borderRadius: "4px",
+                              whiteSpace: "nowrap",
+                              fontSize: 12,
+                            }}
+                          >
+                            {loc.x}, {loc.y}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 
               ) : (
