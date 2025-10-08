@@ -11,6 +11,9 @@ export default function Header()
                 <li className="nav-item px-3">
                     <Link className="nav-link" href="ndmi">NDMI</Link>
                 </li>
+                <li className="nav-item px-3">
+                    <Link className="nav-link" href="coordinates">ตั้งค่าพิกัด</Link>
+                </li>
             </ul>
         </header>
     </>);
