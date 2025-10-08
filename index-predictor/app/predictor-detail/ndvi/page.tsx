@@ -157,7 +157,6 @@ export default function NDVI() {
   }
 
   const [selected, setSelected] = useState<{ x: number; y: number } | null>(null);
-  const [ndviList, setNDVIList] = useState<NdviDocument[] | null>(null);
   const [locations, setLocations] = useState<
     { x: number; y: number; top: number; left: number }[]
   >([]);
@@ -178,7 +177,6 @@ export default function NDVI() {
           left: doc.left,
         }));
 
-        setNDVIList(data);
         setLocations(mappedLocations);
 
         if (data.length > 0) {
@@ -195,7 +193,7 @@ export default function NDVI() {
     }
     fetchAllNdvi();
   }, []);
-  
+
   useEffect(() => {
     async function fetchNdvi() {
       if (!selected) return; // in case selected is null initially

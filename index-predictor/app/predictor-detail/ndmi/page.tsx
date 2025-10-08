@@ -157,7 +157,6 @@ export default function NDMI() {
   }
 
   const [selected, setSelected] = useState<{ x: number; y: number } | null>(null);
-  const [ndmiList, setNDMIList] = useState<NdmiDocument[] | null>(null);
   const [locations, setLocations] = useState<
     { x: number; y: number; top: number; left: number }[]
   >([]);
@@ -178,7 +177,6 @@ export default function NDMI() {
           left: doc.left,
         }));
 
-        setNDMIList(data);
         setLocations(mappedLocations);
         if (data.length > 0) {
           setSelected({
