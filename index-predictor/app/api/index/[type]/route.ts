@@ -39,3 +39,41 @@ export async function GET(
         );
     }
 }
+
+export async function POST(
+    req: Request,
+    { params }: { params: { type: string }},
+) {
+    const body = await req.json();
+    
+    const { row, column } = body;
+    const {type} = await params;
+    
+    console.log("column");
+    console.log(column);
+    const client = await clientPromise;
+    const db = client.db("IndexPredictor");
+    const collection = db.collection("indexCoordinates");
+    const xAxis = Number(row);
+    const yAxis = Number(column);
+    
+    if (row != null && column != null) {
+        const top = Math.round(1 + (xAxis/4));
+        const left = Math.round((592+(13*yAxis))/62);
+        const newdata = {
+            xAxis,
+            yAxis,
+            top,
+            left,
+            type
+        };
+
+        await collection.insertOne(newdata); 
+        return NextResponse.json({ ok: true, data: newdata }, { status: 201 });
+    } else {
+        return NextResponse.json(
+            { error: "row and column are required." },
+            { status: 500 }
+        );
+    }
+}

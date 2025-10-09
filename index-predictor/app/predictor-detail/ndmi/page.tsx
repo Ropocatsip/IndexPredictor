@@ -265,18 +265,7 @@ export default function NDMI() {
                         onMouseLeave={() => setHoveredIndex(null)}
                         onClick={() => setSelected({ x: loc.x, y: loc.y })}
                       >
-                        <FontAwesomeIcon 
-                          icon={faLocationDot} 
-                          style={{
-                            fontSize: "clamp(18px, 2.5vw, 32px)",
-                            color:
-                              selected?.x === loc.x && selected?.y === loc.y
-                                ? "black"
-                                : "white",
-                            textShadow: "0 0 4px rgba(0,0,0,.6)",
-                          }}
-                          // color: selected?.x === loc.x && selected?.y === loc.y ? "black" : "white"  }} 
-                        />
+                        <FontAwesomeIcon icon={faLocationDot} style={{ fontSize: "32px", color: selected?.x === loc.x && selected?.y === loc.y ? "black" : "white"  }} />
                         {hoveredIndex === index && (
                           <div
                             style={{

@@ -1,10 +1,10 @@
 "use client";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
-import { faImages, faFileCsv, faMapLocation, faLocationDot, faSquare, faMinus, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faImages, faFileCsv, faMapLocation, faLocationDot, faSquare } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
 
-library.add(faImages, faFileCsv, faMapLocation, faLocationDot, faSquare, faPlus);
+library.add(faImages, faFileCsv, faMapLocation, faLocationDot, faSquare);
 
 export default function COORDINATES() {
   const [loading, setLoading] = useState(true);
@@ -49,6 +49,11 @@ export default function COORDINATES() {
       }
       fetchAllNdvi();
     }, []);
+
+    const addIndexCoordinates = () => {
+      console.log("test");
+      
+    };
 
   return (
     <div className="px-5 py-3">
@@ -96,18 +101,17 @@ export default function COORDINATES() {
                 <div className="col-sm">
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">column</span>
-                    <input type="text" className="form-control" placeholder="column" aria-label="column" aria-describedby="basic-addon1"/>
+                    <input type="number" className="form-control" placeholder="column" aria-label="column" aria-describedby="basic-addon1"/>
                   </div>
                 </div>
                 <div className="col-sm">
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">row</span>
-                    <input type="text" className="form-control" placeholder="row" aria-label="row" aria-describedby="basic-addon1"/>
+                    <input type="number" className="form-control" placeholder="row" aria-label="row" aria-describedby="basic-addon1"/>
                   </div>
                 </div>
                 <div className="col-sm align-items-end">
-                  <button type="button" className="btn btn-success mb-3">
-                    {/* <FontAwesomeIcon className='pe-2' icon="plus" size="lg"></FontAwesomeIcon> */}
+                  <button type="button" className="btn btn-success mb-3" onClick={addIndexCoordinates}>
                     เพิ่ม 
                   </button>
                 </div>
