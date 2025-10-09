@@ -66,22 +66,28 @@ export async function POST(
             type
         };
 
-        const index = await collection.findOne({xAxis, yAxis}); 
+        const index = await collection.findOne({xAxis, yAxis, type}); 
         if (index) {
             return NextResponse.json(
-            { error: "row and column are existed." },
+            { error: `row and column ${xAxis}, ${yAxis} are existed.` },
             { status: 500 }
         );
         } else {
             await collection.insertOne(newdata); 
-            const res = await fetch(
-            `${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/coordinates`,
+            const resp = await fetch(`${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/coordinates/${type}/${xAxis}/${yAxis}`,
                 {
-                method: "POST",
-                cache: "no-store",
+                    method: "POST",
+                    cache: "no-store",
                 }
             );
-            return NextResponse.json({ ok: true, data: newdata }, { status: 201 });
+            if (!resp.ok) {
+                return NextResponse.json(
+                    { error: `Flask call failed for ${type}`, status: resp.status },
+                    { status: 502 }
+                );
+            } else {
+                return NextResponse.json({ ok: true, data: newdata }, { status: 201 });
+            }
         }
     } else {
         return NextResponse.json(

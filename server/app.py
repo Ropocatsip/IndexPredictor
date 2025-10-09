@@ -75,12 +75,11 @@ def predict_csv(indexType, predictedWeek):
         download_name=f"{predictedWeek}-predicted.csv"
     )
 
-@app.route('/coordinates', methods=['POST'])
-def save_index_from_csv():
+@app.route('/coordinates/<indexType>/<xAxis>/<yAxis>', methods=['POST'])
+def save_index_from_csv(indexType, xAxis, yAxis):
     currentDate = getCurrentDate()
     predictedWeek = getPredictedDate(currentDate)
-    saveIndexFromCsv("ndvi", predictedWeek)
-    saveIndexFromCsv("ndmi", predictedWeek)
+    saveIndexFromCsv(indexType, predictedWeek, xAxis, yAxis)
     return jsonify({"success": True}), 200
 
 # scheduler.add_job(id='weekly_job', func=fetch_route, trigger='cron', day_of_week='sun', hour=23, minute=0)

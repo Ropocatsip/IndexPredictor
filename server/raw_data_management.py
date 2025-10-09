@@ -225,15 +225,17 @@ def fillMissingWeek(indexType, startDate, currentDate):
                 interpolated_df.to_csv(output_file)
                 print(f'Generated {output_file}')
 
-def saveIndexFromCsv(indexType, predictedWeek):
+def saveIndexFromCsv(indexType, predictedWeek, xAxis, yAxis):
     folder_path = f"data/{indexType}/weekdata"
     collection = mydb["indexCoordinates"]
-
-    allCoordinates = collection.find({"type" : indexType }).to_list()
     targetList = []
-    for coordinates in allCoordinates:
-        targetList.append((coordinates["xAxis"], coordinates["yAxis"]))
-    print(targetList)
+    if (xAxis is None) :
+        allCoordinates = collection.find({"type" : indexType }).to_list()
+        for coordinates in allCoordinates:
+            targetList.append((coordinates["xAxis"], coordinates["yAxis"]))
+    else : 
+        print("insert one")
+        targetList.append((int(xAxis), int(yAxis)))
     # Specify the full path to your CSV file
     # Read the CSV into a DataFrame
 
@@ -272,7 +274,7 @@ def saveIndexFromCsv(indexType, predictedWeek):
         })
         # Update MongoDB
         collection.update_one(
-            {"xAxis": x_target, "yAxis": y_target},
+            {"xAxis": x_target, "yAxis": y_target, "type": indexType},
             {"$set": {"indexData": index_data_list, "updateDate": datetime.now()}}
         )
         print(f"MongoDB document x: {x_target}, y: {y_target} updated successfully.")

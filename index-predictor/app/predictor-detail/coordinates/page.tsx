@@ -55,30 +55,16 @@ export default function COORDINATES() {
     const addIndexCoordinates = async (x: number, y: number) => {
       try {
         setLoading(true);
-        const resndmi = await fetch(`/api/index/ndmi`,{
-          method: "POST",
-          cache: "no-store",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ row: x, column: y })
-        });
+        const indexlist = ["ndmi", "ndvi"]; 
 
-        if (!resndmi.ok) {
-          throw new Error("Failed to fetch");
-        }
-
-        const resndvi = await fetch(`/api/index/ndvi`,{
-          method: "POST",
-          cache: "no-store",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ row: x, column: y })
-        });
-
-        if (!resndvi.ok) {
-          throw new Error("Failed to fetch");
+        for (const indextype of indexlist) {
+          const res = await fetch(`/api/index/${indextype}`, {
+            method: "POST",
+            cache: "no-store",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ row: x, column: y }),
+          });
+          if (!res.ok) throw new Error(`Failed to add ${indextype}`);
         }
 
         setLocations(prev =>prev.some(it => it.x === x && it.y === y) ? prev : [...prev, { x, y }]);
@@ -92,30 +78,20 @@ export default function COORDINATES() {
     const deleteIndexCoordinates = async (x: number, y: number) => {
       try {
         setLoading(true);
-        const resndmi = await fetch(`/api/index/ndmi`,{
-          method: "DELETE",
-          cache: "no-store",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ row: x, column: y })
-        });
-
-        if (!resndmi.ok) {
-          throw new Error("Failed to fetch");
-        }
-
-        const resndvi = await fetch(`/api/index/ndvi`,{
-          method: "DELETE",
-          cache: "no-store",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ row: x, column: y })
-        });
-
-        if (!resndvi.ok) {
-          throw new Error("Failed to fetch");
+        const indexlist = ["ndmi", "ndvi"];
+        for (const indextype of indexlist) {
+          const res = await fetch(`/api/index/${indextype}`,{
+            method: "DELETE",
+            cache: "no-store",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ row: x, column: y })
+          });
+  
+          if (!res.ok) {
+            throw new Error("Failed to fetch");
+          }
         }
 
         setLocations(prev => prev.filter(item => !(item.x === x && item.y === y)));
@@ -173,14 +149,14 @@ export default function COORDINATES() {
                 <div className="col-sm">
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">row</span>
-                    <input value={column} onChange={(e) => setColumn(Number(e.target.value))}
+                    <input value={row} onChange={(e) => setRow(Number(e.target.value))}
                       type="number" className="form-control" placeholder="column" aria-label="column" aria-describedby="basic-addon1"/>
                   </div>
                 </div>
                 <div className="col-sm">
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">column</span>
-                    <input value={row} onChange={(e) => setRow(Number(e.target.value))}
+                    <input value={column} onChange={(e) => setColumn(Number(e.target.value))}
                       type="number" className="form-control" placeholder="row" aria-label="row" aria-describedby="basic-addon1"/>
                   </div>
                 </div>
