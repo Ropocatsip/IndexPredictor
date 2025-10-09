@@ -25,6 +25,8 @@ export default function COORDINATES() {
     const [locations, setLocations] = useState<
       { x: number; y: number; }[]
     >([]);
+    const [row, setRow] = useState<number | "">("");
+    const [column, setColumn] = useState<number | "">("");
 
   useEffect(() => {
       async function fetchAllNdvi() {
@@ -50,9 +52,41 @@ export default function COORDINATES() {
       fetchAllNdvi();
     }, []);
 
-    const addIndexCoordinates = () => {
-      console.log("test");
-      
+    const addIndexCoordinates = async (x: number, y: number) => {
+      try {
+        setLoading(true);
+        const resndmi = await fetch(`/api/index/ndmi`,{
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ row: x, column: y })
+        });
+
+        if (!resndmi.ok) {
+          throw new Error("Failed to fetch");
+        }
+
+        const resndvi = await fetch(`/api/index/ndvi`,{
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ row: x, column: y })
+        });
+
+        if (!resndvi.ok) {
+          throw new Error("Failed to fetch");
+        }
+
+        setLocations(prev =>prev.some(it => it.x === x && it.y === y) ? prev : [...prev, { x, y }]);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     const deleteIndexCoordinates = async (x: number, y: number) => {
@@ -138,18 +172,20 @@ export default function COORDINATES() {
               <div className="row">
                 <div className="col-sm">
                   <div className="input-group mb-3">
-                    <span className="input-group-text" id="basic-addon1">column</span>
-                    <input type="number" className="form-control" placeholder="column" aria-label="column" aria-describedby="basic-addon1"/>
+                    <span className="input-group-text" id="basic-addon1">row</span>
+                    <input value={column} onChange={(e) => setColumn(Number(e.target.value))}
+                      type="number" className="form-control" placeholder="column" aria-label="column" aria-describedby="basic-addon1"/>
                   </div>
                 </div>
                 <div className="col-sm">
                   <div className="input-group mb-3">
-                    <span className="input-group-text" id="basic-addon1">row</span>
-                    <input type="number" className="form-control" placeholder="row" aria-label="row" aria-describedby="basic-addon1"/>
+                    <span className="input-group-text" id="basic-addon1">column</span>
+                    <input value={row} onChange={(e) => setRow(Number(e.target.value))}
+                      type="number" className="form-control" placeholder="row" aria-label="row" aria-describedby="basic-addon1"/>
                   </div>
                 </div>
                 <div className="col-sm align-items-end">
-                  <button type="button" className="btn btn-success mb-3" onClick={addIndexCoordinates}>
+                  <button type="button" className="btn btn-success mb-3" onClick={() =>{if (row && column) addIndexCoordinates(row, column)}}>
                     เพิ่ม 
                   </button>
                 </div>

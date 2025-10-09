@@ -66,16 +66,23 @@ export async function POST(
             type
         };
 
-        await collection.insertOne(newdata); 
-
-        const res = await fetch(
-        `${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/coordinates`,
-            {
-            method: "POST",
-            cache: "no-store",
-            }
+        const index = await collection.findOne({xAxis, yAxis}); 
+        if (index) {
+            return NextResponse.json(
+            { error: "row and column are existed." },
+            { status: 500 }
         );
-        return NextResponse.json({ ok: true, data: newdata }, { status: 201 });
+        } else {
+            await collection.insertOne(newdata); 
+            const res = await fetch(
+            `${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/coordinates`,
+                {
+                method: "POST",
+                cache: "no-store",
+                }
+            );
+            return NextResponse.json({ ok: true, data: newdata }, { status: 201 });
+        }
     } else {
         return NextResponse.json(
             { error: "row and column are required." },
