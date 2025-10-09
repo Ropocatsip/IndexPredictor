@@ -55,6 +55,44 @@ export default function COORDINATES() {
       
     };
 
+    const deleteIndexCoordinates = async (x: number, y: number) => {
+      try {
+        setLoading(true);
+        const resndmi = await fetch(`/api/index/ndmi`,{
+          method: "DELETE",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ row: x, column: y })
+        });
+
+        if (!resndmi.ok) {
+          throw new Error("Failed to fetch");
+        }
+
+        const resndvi = await fetch(`/api/index/ndvi`,{
+          method: "DELETE",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ row: x, column: y })
+        });
+
+        if (!resndvi.ok) {
+          throw new Error("Failed to fetch");
+        }
+
+        setLocations(prev => prev.filter(item => !(item.x === x && item.y === y)));
+
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
   return (
     <div className="px-5 py-3">
       <h4>ตั้งค่าพิกัด</h4>
@@ -77,7 +115,7 @@ export default function COORDINATES() {
                     <button
                       type="button"
                       className="btn btn-sm btn-danger"
-                      // onClick={() => handleDelete(index)}
+                      onClick={() => deleteIndexCoordinates(u.x, u.y)}
                     >
                       <i className="bi bi-trash"></i> ลบ
                     </button>
