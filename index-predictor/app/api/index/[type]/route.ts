@@ -49,15 +49,13 @@ export async function POST(
     const { row, column } = body;
     const {type} = await params;
     
-    console.log("column");
-    console.log(column);
     const client = await clientPromise;
     const db = client.db("IndexPredictor");
     const collection = db.collection("indexCoordinates");
-    const xAxis = Number(row);
-    const yAxis = Number(column);
     
     if (row != null && column != null) {
+        const xAxis = Number(row);
+        const yAxis = Number(column);
         const top = Math.round(1 + (xAxis/4));
         const left = Math.round((592+(13*yAxis))/62);
         const newdata = {
@@ -78,6 +76,45 @@ export async function POST(
             }
         );
         return NextResponse.json({ ok: true, data: newdata }, { status: 201 });
+    } else {
+        return NextResponse.json(
+            { error: "row and column are required." },
+            { status: 500 }
+        );
+    }
+}
+
+export async function DELETE(
+    req: Request,
+    { params }: { params: { type: string }}
+){
+    const body = await req.json();
+    
+    const { row, column } = body;
+    const {type} = await params;
+    
+    const client = await clientPromise;
+    const db = client.db("IndexPredictor");
+    const collection = db.collection("indexCoordinates");
+    
+    if (row != null && column != null) {
+        const yAxis = Number(column);
+        const xAxis = Number(row);
+        const filter = {
+            xAxis, 
+            yAxis, 
+            type
+        };
+        const index = await collection.findOne(filter); 
+        if (index) {
+            await collection.deleteOne(filter); 
+            return NextResponse.json({ status: 204 });
+        } else {
+            return NextResponse.json(
+            { error: `no coordinates (${xAxis}, ${yAxis})` },
+            { status: 500 }
+        );
+        }
     } else {
         return NextResponse.json(
             { error: "row and column are required." },
