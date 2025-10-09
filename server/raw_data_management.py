@@ -226,10 +226,15 @@ def fillMissingWeek(indexType, startDate, currentDate):
                 print(f'Generated {output_file}')
 
 def saveIndexFromCsv(indexType, predictedWeek):
-    targetList = [(207, 270), (125, 92)]
-    # Specify the full path to your CSV file
     folder_path = f"data/{indexType}/weekdata"
-    collection = mydb[indexType]
+    collection = mydb["indexCoordinates"]
+
+    allCoordinates = collection.find({"type" : indexType }).to_list()
+    targetList = []
+    for coordinates in allCoordinates:
+        targetList.append((coordinates["xAxis"], coordinates["yAxis"]))
+    print(targetList)
+    # Specify the full path to your CSV file
     # Read the CSV into a DataFrame
 
     all_files = sorted([f for f in os.listdir(folder_path) if f.endswith(".csv")])
@@ -272,4 +277,3 @@ def saveIndexFromCsv(indexType, predictedWeek):
         )
         print(f"MongoDB document x: {x_target}, y: {y_target} updated successfully.")
     
-        # Display the first few rows

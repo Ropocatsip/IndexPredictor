@@ -69,6 +69,14 @@ export async function POST(
         };
 
         await collection.insertOne(newdata); 
+
+        const res = await fetch(
+        `${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/coordinates`,
+            {
+            method: "POST",
+            cache: "no-store",
+            }
+        );
         return NextResponse.json({ ok: true, data: newdata }, { status: 201 });
     } else {
         return NextResponse.json(
