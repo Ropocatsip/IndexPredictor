@@ -7,6 +7,15 @@ from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
+import tensorflow as tf
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "1"
+
+tf.config.optimizer.set_jit(False)
+tf.config.threading.set_intra_op_parallelism_threads(4)
+tf.config.threading.set_inter_op_parallelism_threads(4)
 
 def splitTrainAndValidateData(folder):
     # Regex to extract year and week from filenames
@@ -86,6 +95,9 @@ def trainModel(indexType):
     data, weeks, scaler = load_and_preprocess_data(folder_path)
     X, y, week_labels = prepare_sequences(data, weeks)
 
+    X = X[..., np.newaxis].astype("float32")
+    y = y.astype("float32")
+
     train_files, val_files = splitTrainAndValidateData(folder_path)
     # Split data: Train (2019-week42 to 2022-week20), Validate (2022-week42 to 2023-week20)
     X_train, y_train, X_val, y_val = [], [], [], []
@@ -102,7 +114,8 @@ def trainModel(indexType):
     X_val   = np.array(X_val,   dtype="float32")
     y_val   = np.array(y_val,   dtype="float32")
 
-    input_shape = (X.shape[1], X.shape[2], X.shape[3], 1)
+    # input_shape = (X.shape[1], X.shape[2], X.shape[3], 1)
+    input_shape = X_train.shape[1:]
     output_size = y.shape[1] * y.shape[2]  # Ensure correct output size calculation
     model = build_cnn_lstm_model(input_shape, output_size)
 
