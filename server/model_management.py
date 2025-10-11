@@ -2,7 +2,7 @@ import os
 import re
 from datetime import datetime
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import TimeDistributed, Conv2D, MaxPooling2D, Flatten, LSTM, Dense
+from tensorflow.keras.layers import TimeDistributed, Conv2D, MaxPooling2D, Flatten, LSTM, Dense, GlobalAveragePooling2D
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
@@ -73,7 +73,7 @@ def trainModel(indexType):
         model = Sequential([
             TimeDistributed(Conv2D(64, (3, 3), activation='relu', padding='same'), input_shape=input_shape),
             TimeDistributed(MaxPooling2D((2, 2))),
-            TimeDistributed(Flatten()),
+            TimeDistributed(GlobalAveragePooling2D()),
             LSTM(100, activation='relu', return_sequences=False),
             Dense(output_size, activation='tanh')
         ])
