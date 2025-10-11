@@ -45,12 +45,14 @@ def fetch_route():
         trainModel("ndmi")
         predictModel("ndvi")
         predictModel("ndmi")
+
+        # ---- web presentation ----
         convertToPng("ndvi")
         convertToPng("ndmi")
         mergeBetweenIndexAndRaster(predictedWeek, "ndvi")
         mergeBetweenIndexAndRaster(predictedWeek, "ndmi")
-        saveIndexFromCsv("ndvi", predictedWeek)
-        saveIndexFromCsv("ndmi", predictedWeek)
+        saveIndexFromCsv("ndvi", predictedWeek, None, None)
+        saveIndexFromCsv("ndmi", predictedWeek, None, None)
         
     else : 
         print("rainy week, skip operation.")
