@@ -97,8 +97,10 @@ def trainModel(indexType):
             X_val.append(X[i])
             y_val.append(y[i])
 
-    X_train, y_train = np.array(X_train), np.array(y_train)
-    X_val, y_val = np.array(X_val), np.array(y_val)
+    X_train = np.array(X_train, dtype="float32")
+    y_train = np.array(y_train, dtype="float32")
+    X_val   = np.array(X_val,   dtype="float32")
+    y_val   = np.array(y_val,   dtype="float32")
 
     input_shape = (X.shape[1], X.shape[2], X.shape[3], 1)
     output_size = y.shape[1] * y.shape[2]  # Ensure correct output size calculation
@@ -106,7 +108,7 @@ def trainModel(indexType):
 
     # Train the model
     callbacks = [EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)]
-    history = model.fit(X_train, y_train.reshape(y_train.shape[0], -1), epochs=10, batch_size=16, validation_data=(X_val, y_val.reshape(y_val.shape[0], -1)), callbacks=callbacks)
+    history = model.fit(X_train, y_train.reshape(y_train.shape[0], -1), epochs=10, batch_size=8, validation_data=(X_val, y_val.reshape(y_val.shape[0], -1)), callbacks=callbacks)
 
     print(f"Processed data shape: {data.shape}")  # (num_weeks, height, width)
     print(f"Train shape: {X_train.shape}, Validation shape: {X_val.shape}")  # Explicit split based on week numbers
