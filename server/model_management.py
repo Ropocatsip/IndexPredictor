@@ -108,7 +108,7 @@ def trainModel(indexType):
 
     # Train the model
     callbacks = [EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)]
-    history = model.fit(X_train, y_train.reshape(y_train.shape[0], -1), epochs=10, batch_size=8, validation_data=(X_val, y_val.reshape(y_val.shape[0], -1)), callbacks=callbacks)
+    history = model.fit(X_train, y_train.reshape(y_train.shape[0], -1), epochs=10, batch_size=4, validation_data=(X_val, y_val.reshape(y_val.shape[0], -1)), callbacks=callbacks)
 
     print(f"Processed data shape: {data.shape}")  # (num_weeks, height, width)
     print(f"Train shape: {X_train.shape}, Validation shape: {X_val.shape}")  # Explicit split based on week numbers
