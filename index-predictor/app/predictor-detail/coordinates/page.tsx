@@ -150,7 +150,7 @@ export default function COORDINATES() {
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">row</span>
                     <input value={row} onChange={(e) => setRow(Number(e.target.value))}
-                      type="number" className="form-control" placeholder="column" aria-label="column" aria-describedby="basic-addon1"/>
+                      type="number" className="form-control" placeholder="row" aria-label="row" aria-describedby="basic-addon1"/>
                   </div>
                   <p className='text-muted'>ควรมีค่า row ระหว่าง 112 - 254</p>
                 </div>
@@ -158,7 +158,7 @@ export default function COORDINATES() {
                   <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">column</span>
                     <input value={column} onChange={(e) => setColumn(Number(e.target.value))}
-                      type="number" className="form-control" placeholder="row" aria-label="row" aria-describedby="basic-addon1"/>
+                      type="number" className="form-control" placeholder="column" aria-label="column" aria-describedby="basic-addon1"/>
                   </div>
                   <p className='text-muted'>ควรมีค่า cloumn ระหว่าง 88 - 274</p>
                 </div>
