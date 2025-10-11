@@ -1,9 +1,13 @@
 import clientPromise from "@/app/lib/mongodb";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+type RouteContext = {
+  params: Promise<{ type: string }>;
+};
 
 export async function GET(
-    req: Request,
-    { params }: { params: Promise<{ type: string }> },
+    req: NextRequest,
+    context: RouteContext,
 ) {
     try {
         const { searchParams } = new URL(req.url);
@@ -12,8 +16,7 @@ export async function GET(
         const xAxis = Number(xAxisParam);
         const yAxis = Number(yAxisParam);
 
-        const {type} = await params;
-
+        const { type } = await context.params;
         const client = await clientPromise;
         const db = client.db("IndexPredictor");
         const collection = db.collection("indexCoordinates");
@@ -41,13 +44,13 @@ export async function GET(
 }
 
 export async function POST(
-    req: Request,
-    { params }: { params: { type: string }},
+    req: NextRequest,
+    context: RouteContext,
 ) {
     const body = await req.json();
     
     const { row, column } = body;
-    const {type} = await params;
+    const { type } = await context.params;
     
     const client = await clientPromise;
     const db = client.db("IndexPredictor");
@@ -70,7 +73,7 @@ export async function POST(
         if (index) {
             return NextResponse.json(
             { error: `row and column ${xAxis}, ${yAxis} are existed.` },
-            { status: 500 }
+            { status: 409 }
         );
         } else {
             await collection.insertOne(newdata); 
@@ -98,13 +101,13 @@ export async function POST(
 }
 
 export async function DELETE(
-    req: Request,
-    { params }: { params: { type: string }}
+    req: NextRequest,
+    context: RouteContext,
 ){
     const body = await req.json();
     
     const { row, column } = body;
-    const {type} = await params;
+    const { type } = await context.params;
     
     const client = await clientPromise;
     const db = client.db("IndexPredictor");
