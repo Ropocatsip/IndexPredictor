@@ -77,7 +77,7 @@ export async function POST(
         );
         } else {
             await collection.insertOne(newdata); 
-            const resp = await fetch(`${process.env.NEXT_PUBLIC_FLASK_BASE_URL}/coordinates/${type}/${xAxis}/${yAxis}`,
+            const resp = await fetch(`${process.env.FLASK_INTERNAL_URL}/coordinates/${type}/${xAxis}/${yAxis}`,
                 {
                     method: "POST",
                     cache: "no-store",
