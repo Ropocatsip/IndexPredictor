@@ -3,7 +3,7 @@ from flask_apscheduler import APScheduler
 from fetch_data import fetchAndSaveCsv, fetchAndSaveRasterCsv
 from raw_data_management import isRainy, getLatestDate, getStartDate, deleteOldRawData, getCurrentDate, insertLatestDate, avgRawData, fillMissingWeek, deleteOldAvgWeekData, saveIndexFromCsv, getPredictedDate
 from model_management import trainModel
-from predict_management import predictModel, convertToPng, mergeBetweenIndexAndRaster
+from predict_management import predictModel, convertToPng, mergeBetweenIndexAndRaster, applyZeroMaskFromOriginal
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -40,15 +40,16 @@ def fetch_route():
         deleteOldAvgWeekData(startDate,"ndvi")
         deleteOldAvgWeekData(startDate,"ndmi")
 
-        # ---- train model ----
-        trainModel("ndvi")
-        trainModel("ndmi")
+        # # ---- train model ----
+        # trainModel("ndvi")
+        # trainModel("ndmi")
         predictModel("ndvi")
         predictModel("ndmi")
-
+        applyZeroMaskFromOriginal("ndvi", predictedWeek)
+        applyZeroMaskFromOriginal("ndmi", predictedWeek)
         # ---- web presentation ----
-        convertToPng("ndvi")
-        convertToPng("ndmi")
+        convertToPng("ndvi", predictedWeek)
+        convertToPng("ndmi", predictedWeek)
         mergeBetweenIndexAndRaster(predictedWeek, "ndvi")
         mergeBetweenIndexAndRaster(predictedWeek, "ndmi")
         saveIndexFromCsv("ndvi", predictedWeek, None, None)

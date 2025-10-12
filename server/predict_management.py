@@ -52,20 +52,20 @@ def predictModel(indexType):
     weeks_sorted = sorted(data_dict.keys())
 
     # === TAKE LAST SEQUENCE ===
-    last_weeks = weeks_sorted[-sequence_length:]       # last 6 weeks
+    last_weeks = weeks_sorted[-sequence_length:]
     if last_weeks[-1][1] == 52:
         next_week = (last_weeks[-1][0], 1) 
     elif last_weeks[-1][1] == 20:
         next_week = (last_weeks[-1][0], 45) 
     else:
-        next_week = (last_weeks[-1][0], last_weeks[-1][1] + 1)  # predict week+1 (naive)
+        next_week = (last_weeks[-1][0], last_weeks[-1][1] + 1)
 
     input_data = prepare_input_sequence(data_dict, last_weeks)
 
     if input_data is not None:
         # Shape for model
-        input_data = np.expand_dims(input_data, axis=-1)  # add channel
-        input_data = np.expand_dims(input_data, axis=0)   # add batch
+        input_data = np.expand_dims(input_data, axis=-1)
+        input_data = np.expand_dims(input_data, axis=0)
 
         # Predict
         predicted_output = model.predict(input_data)
@@ -84,61 +84,39 @@ def predictModel(indexType):
     else:
         print("Not enough data to prepare input sequence.")
 
-def convertToPng(indexType):
-    output_folder = f"model/{indexType}"
+def convertToPng(indexType, predictedWeek):
+    csv_path = f"model/{indexType}/{predictedWeek}-predicted.csv"
+    df = pd.read_csv(csv_path)
+    index = df.values 
 
-    # === FIND THE ONLY CSV FILE IN FOLDER ===
-    csv_files = [f for f in os.listdir(output_folder) if f.endswith(".csv")]
-    if not csv_files:
-        raise FileNotFoundError(f"No CSV file found in model/{indexType} folder.")
-    csv_file = os.path.join(output_folder, csv_files[0])  # take the first (only) file
-
-    # === LOAD CSV ===
-    df = pd.read_csv(csv_file)
-    index = df.values  # convert to numpy array
-
-    polygon = [(88, 110), (273, 164), (274, 252), (89, 226)]
-    # Create polygon mask
-    mask_img = Image.new("L", (index.shape[1], index.shape[0]), 0)
-    ImageDraw.Draw(mask_img).polygon(polygon, outline=1, fill=1)
-    polygon_mask = np.array(mask_img).astype(bool)  # True = inside polygon
-
-    # === NORMALIZE to [0,1] ===
     if indexType == "ndvi":
         index_min, index_max = 0, 1.0
     else: 
         index_min, index_max = -1.0, 1.0
 
-    index_norm = np.zeros_like(index, dtype=float)
-    index_norm[polygon_mask] = (index[polygon_mask] - index_min) / (index_max - index_min + 1e-8)
+    index_norm = (index - index_min) / (index_max - index_min + 1e-8)
     index_norm = np.clip(index_norm, 0, 1)
-    # index_norm = (index - index_min) / (index_max - index_min + 1e-8)
-    # index_norm = np.clip(index_norm, 0, 1)
     
-    # === CONVERT TO 8-BIT RGB IMAGE ===
     colored = cm.gist_rainbow(index_norm)[:, :, :3] * 255
     image_rgb = colored.astype(np.uint8)
 
-    # === SET BACKGROUND TO GRAY ===
-    image_rgb[~polygon_mask] = [128, 128, 128]
+    gray_mask = (index == 0.0)
+    image_rgb[gray_mask] = [128, 128, 128]
 
-    # === SAVE PNG ===
-    base_name = os.path.splitext(csv_files[0])[0]  # remove .csv
-    output_path = os.path.join(output_folder, f"{base_name}.png")
+    output_path = os.path.splitext(csv_path)[0] + ".png"
     Image.fromarray(image_rgb).save(output_path)
 
     print(f"Saved PNG: {output_path}")
 
 def mergeBetweenIndexAndRaster(predictedWeek, indexType):
     # Load images
-    background = Image.open("data/raster/latest_rgb.jpeg").convert("RGBA")   # your first image
-    overlay = Image.open(f'model/{indexType}/{predictedWeek}-predicted.png').convert("RGBA") # your second image
+    background = Image.open("data/raster/latest_rgb.jpeg").convert("RGBA")
+    overlay = Image.open(f'model/{indexType}/{predictedWeek}-predicted.png').convert("RGBA")
 
-    # Make gray background transparent
     datas = overlay.getdata()
     new_data = []
     for item in datas:
-        # Detect gray (approx 128,128,128, adjust thresholds if needed)
+
         if 100 < item[0] < 160 and 100 < item[1] < 160 and 100 < item[2] < 160:
             new_data.append((255, 255, 255, 0))  # transparent
         else:
@@ -148,16 +126,44 @@ def mergeBetweenIndexAndRaster(predictedWeek, indexType):
     # Resize overlay to match background
     overlay_resized = overlay.resize(background.size)
     alpha = 0.65  # 35% visible (65% transparent)
-    # Create new image with reduced alpha
+
     r, g, b, a = overlay_resized.split()
-    # Reduce alpha channel
+
     a = a.point(lambda p: int(p * alpha))
-    # Merge back
+
     overlay_with_alpha = Image.merge("RGBA", (r, g, b, a))
 
-    # Merge images
     merged = Image.alpha_composite(background, overlay_with_alpha)
 
-    # Save result
     merged.save(f"model/{indexType}/{predictedWeek}-merged.png")
         
+
+def applyZeroMaskFromOriginal(indexType, predictedWeek):
+
+    raw_folder = f"data/{indexType}/rawdata"
+    files = [f for f in os.listdir(raw_folder) if f.endswith(".csv")]
+    if not files:
+        raise FileNotFoundError(f"No CSV files found in {raw_folder}")
+    latest_file = max(
+        files,
+        key=lambda f: os.path.getmtime(os.path.join(raw_folder, f))
+    )
+    latest_path = os.path.join(raw_folder, latest_file)
+
+    print(f"Using latest original file: {latest_file}")
+
+    # === load data ===
+    original = pd.read_csv(latest_path)
+    predicted_path = f"model/{indexType}/{predictedWeek}-predicted.csv"
+    predicted = pd.read_csv(predicted_path)
+
+    original_values = original.iloc[:, 1:].values 
+    predicted_values = predicted.values
+
+    mask_zero = (original_values == 0)
+    predicted_values[mask_zero] = 0
+
+    predicted_fixed = pd.DataFrame(predicted_values, columns=predicted.columns)
+    predicted_fixed.to_csv(predicted_path, index=False)
+
+    print(f"Saved fixed predicted file to: {predicted_path}")
