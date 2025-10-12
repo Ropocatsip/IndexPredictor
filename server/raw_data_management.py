@@ -30,8 +30,8 @@ def getLatestDate():
     return latestDate
 
 def getCurrentDate():
-    # currentDate = datetime.now()
-    currentDate = datetime(2025, 5, 18)
+    currentDate = datetime.now()
+    # currentDate = datetime(2025, 5, 18)
     print(f"Current Date : {currentDate}")
     return currentDate
 

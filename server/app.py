@@ -41,8 +41,8 @@ def fetch_route():
         deleteOldAvgWeekData(startDate,"ndmi")
 
         # # ---- train model ----
-        # trainModel("ndvi")
-        # trainModel("ndmi")
+        trainModel("ndvi")
+        trainModel("ndmi")
         predictModel("ndvi")
         predictModel("ndmi")
         applyZeroMaskFromOriginal("ndvi", predictedWeek)
@@ -85,7 +85,7 @@ def save_index_from_csv(indexType, xAxis, yAxis):
     saveIndexFromCsv(indexType, predictedWeek, xAxis, yAxis)
     return jsonify({"success": True}), 200
 
-# scheduler.add_job(id='weekly_job', func=fetch_route, trigger='cron', day_of_week='sun', hour=23, minute=0)
+scheduler.add_job(id='weekly_job', func=fetch_route, trigger='cron', day_of_week='sun', hour=23, minute=0)
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8000)
