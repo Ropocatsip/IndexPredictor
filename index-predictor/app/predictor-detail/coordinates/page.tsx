@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { faImages, faFileCsv, faMapLocation, faLocationDot, faSquare } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
+import { getISOWeek } from 'date-fns';
 
 library.add(faImages, faFileCsv, faMapLocation, faLocationDot, faSquare);
 
@@ -27,6 +28,11 @@ export default function COORDINATES() {
     >([]);
     const [row, setRow] = useState<number | "">("");
     const [column, setColumn] = useState<number | "">("");
+    const now = new Date();
+    function getPredictedWeekNumber(): number {
+        if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
+        else return 45;
+      }
 
   useEffect(() => {
       async function fetchAllNdvi() {
@@ -62,7 +68,7 @@ export default function COORDINATES() {
             method: "POST",
             cache: "no-store",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ row: x, column: y }),
+            body: JSON.stringify({ preidctedWeek: `${now.getFullYear()}-week${getPredictedWeekNumber()}`, row: x, column: y }),
           });
           if (!res.ok) throw new Error(`Failed to add ${indextype}`);
         }

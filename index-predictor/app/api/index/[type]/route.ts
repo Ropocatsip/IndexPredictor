@@ -49,7 +49,7 @@ export async function POST(
 ) {
     const body = await req.json();
     
-    const { row, column } = body;
+    const { preidctedWeek, row, column } = body;
     const { type } = await context.params;
     
     const client = await clientPromise;
@@ -77,7 +77,7 @@ export async function POST(
         );
         } else {
             await collection.insertOne(newdata); 
-            const resp = await fetch(`${process.env.FLASK_INTERNAL_URL}/coordinates/${type}/${xAxis}/${yAxis}`,
+            const resp = await fetch(`${process.env.FLASK_INTERNAL_URL}/coordinates/${preidctedWeek}/${type}/${xAxis}/${yAxis}`,
                 {
                     method: "POST",
                     cache: "no-store",

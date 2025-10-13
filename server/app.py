@@ -78,10 +78,8 @@ def predict_csv(indexType, predictedWeek):
         download_name=f"{predictedWeek}-predicted.csv"
     )
 
-@app.route('/coordinates/<indexType>/<xAxis>/<yAxis>', methods=['POST'])
-def save_index_from_csv(indexType, xAxis, yAxis):
-    currentDate = getCurrentDate()
-    predictedWeek = getPredictedDate(currentDate)
+@app.route('/coordinates/<predictedWeek>/<indexType>/<xAxis>/<yAxis>', methods=['POST'])
+def save_index_from_csv(predictedWeek, indexType, xAxis, yAxis):
     saveIndexFromCsv(indexType, predictedWeek, xAxis, yAxis)
     return jsonify({"success": True}), 200
 
