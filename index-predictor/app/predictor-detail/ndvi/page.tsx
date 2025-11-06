@@ -150,7 +150,9 @@ export default function NDVI() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   
   function getPredictedWeekNumber(): number {
-    if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
+    const nextWeek = getISOWeek(now) + 1;
+    if (nextWeek <= 20 || nextWeek >= 45) return nextWeek;
+    else if (nextWeek == 53) return 1;
     else return 45;
   }
 
