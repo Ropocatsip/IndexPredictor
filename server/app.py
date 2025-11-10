@@ -1,3 +1,4 @@
+from pytz import timezone
 from flask import Flask, jsonify, send_file
 from flask_apscheduler import APScheduler
 from fetch_data import fetchAndSaveCsv, fetchAndSaveRasterCsv
@@ -16,8 +17,7 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
-@app.route('/predict', methods=['POST'])
-def fetch_route():
+def run_prediction_pipeline():
     currentDate = getCurrentDate()
     latestDate = getLatestDate()
     startDate = getStartDate(currentDate)
@@ -83,7 +83,15 @@ def save_index_from_csv(predictedWeek, indexType, xAxis, yAxis):
     saveIndexFromCsv(indexType, predictedWeek, xAxis, yAxis)
     return jsonify({"success": True}), 200
 
-scheduler.add_job(id='weekly_job', func=fetch_route, trigger='cron', day_of_week='sun', hour=23, minute=0)
+@app.route('/predict', methods=['POST'])
+def fetch_route():
+    run_prediction_pipeline()
+    return jsonify({'status': 'success'})
+
+@scheduler.task('cron', id='weekly_job', day_of_week='sun', hour=23, minute=0)
+def weekly_job():
+    with app.app_context():
+        run_prediction_pipeline()
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=8000)
