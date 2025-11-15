@@ -30,8 +30,8 @@ export default function COORDINATES() {
     const [column, setColumn] = useState<number | "">("");
     const now = new Date();
     function getPredictedWeekNumber(): number {
-        if (getISOWeek(now) <= 20 || getISOWeek(now) >= 45) return getISOWeek(now);
-        else return 45;
+        if (getISOWeek(now) <= 20 || getISOWeek(now) >= 42) return getISOWeek(now);
+        else return 42;
       }
 
   useEffect(() => {

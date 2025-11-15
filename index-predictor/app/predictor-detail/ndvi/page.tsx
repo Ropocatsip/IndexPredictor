@@ -151,9 +151,9 @@ export default function NDVI() {
   
   function getPredictedWeekNumber(): number {
     const nextWeek = getISOWeek(now) + 1;
-    if (nextWeek <= 20 || nextWeek >= 45) return nextWeek;
+    if (nextWeek <= 20 || nextWeek >= 42) return nextWeek;
     else if (nextWeek == 53) return 1;
-    else return 45;
+    else return 42;
   }
 
   const [selected, setSelected] = useState<{ x: number; y: number } | null>(null);

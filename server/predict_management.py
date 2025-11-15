@@ -56,7 +56,7 @@ def predictModel(indexType):
     if last_weeks[-1][1] == 52:
         next_week = (last_weeks[-1][0], 1) 
     elif last_weeks[-1][1] == 20:
-        next_week = (last_weeks[-1][0], 45) 
+        next_week = (last_weeks[-1][0], 42) 
     else:
         next_week = (last_weeks[-1][0], last_weeks[-1][1] + 1)
 

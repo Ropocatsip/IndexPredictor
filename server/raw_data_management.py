@@ -20,7 +20,7 @@ except Exception as e:
 
 def isRainy(currentDate):
     currentWeek = currentDate.isocalendar().week
-    if (currentWeek > 20 and currentWeek < 45) : return True
+    if (currentWeek > 20 and currentWeek < 42) : return True
     else: return False
 
 def getLatestDate():
@@ -52,7 +52,7 @@ def getPredictedDate(currentDate):
         iso_year += 1
         iso_week = 1
     elif iso_week == 20:  
-        iso_week = 45
+        iso_week = 42
     else: 
         iso_week += 1
 
@@ -138,7 +138,7 @@ def avgRawData(indexType):
 
     # Compute weekly average and save to CSV
     for (year, week), dfs in week_groups.items():
-        if 21 <= week <= 44:
+        if 21 <= week <= 41:
             continue
         output_file = os.path.join(output_folder, f"{year}-week{week:02}.csv")
 
@@ -213,7 +213,7 @@ def fillMissingWeek(indexType, startDate, currentDate):
         missing_weeks = sorted(all_weeks - set(existing_weeks[year]))
         
         for week in missing_weeks:
-            if 21 <= week <= 44:
+            if 21 <= week <= 41:
                 continue
             # Get the Monday of the given ISO week
             week_start_date = datetime.strptime(f'{year}-W{week-1}-1', "%Y-W%W-%w").date()
