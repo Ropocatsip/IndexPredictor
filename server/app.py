@@ -88,7 +88,7 @@ def fetch_route():
     run_prediction_pipeline()
     return jsonify({'status': 'success'})
 
-@scheduler.task('cron', id='weekly_job', day_of_week='sun', hour=23, minute=0)
+@scheduler.task('cron', id='weekly_job', day_of_week='mon', hour=0, minute=30)
 def weekly_job():
     with app.app_context():
         run_prediction_pipeline()
